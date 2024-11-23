@@ -7,3 +7,7 @@ class SAuthUser(BaseModel):
         )
     password: str
     
+    
+class SToken(BaseModel):
+    access_token: str
+    token_type: str

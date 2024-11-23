@@ -1,11 +1,12 @@
 import re
-from typing import Optional
 import uuid
 
-from fastapi import HTTPException
 from pydantic import (
-    BaseModel, Field, field_validator,
+    BaseModel, ConfigDict, Field, field_validator,
 )
+
+from app.models.user import DivisionEnum
+
 
 LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 PHONE_MATCH_PATTERN = re.compile(r"^[0-9()+\-]+$")
@@ -17,39 +18,46 @@ class SShowUser(BaseModel):
     patronymic: str
     factory_employee_id: int
     division: str
-    work_phone: str
+    phone_number: str
     is_active: bool
+    
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
     
     
 class SCreateUser(BaseModel):
     factory_employee_id: int = Field(
         title="Табельный номер",
+        examples=["12345"]
+        )
+    password: str = Field(
+        title="Пароль",
+        examples=["Super-Secret-Password"]
         )
     surname: str = Field(
         title="Фамилия",
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
+        examples=["Пупкин"],
         )
     name: str = Field(
         title="Имя",
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
+        examples=["Васян"],
         )
     patronymic: str = Field(
         title="Отчество",
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
+        examples=["Инакентич"],
         )
-    division: str = Field(
-        title="Подразлеление",
-        max_length=25,
-        )
-    work_phone: str = Field(
+    division: DivisionEnum
+    phone_number: str = Field(
         title="Рабочий телефон",
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
+        examples=["8(800)555-35-35"],
         )
-    password: str   
     
     
     @field_validator("name", "surname", "patronymic")
@@ -67,14 +75,15 @@ class SUpdatedUserResponse(BaseModel):
     
     
 class SUpdateUserRequest(BaseModel):
-    work_phone: str = Field(
+    password: str = Field(
+        title="Пароль",
+        examples=["New-Super-Secret-Password"]
+        )
+    phone_number: str = Field(
         title="Рабочий телефон",
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
+        examples=["8(800)555-35-35"],
         )
-    division: str
+    division: DivisionEnum
         
-
-class SToken(BaseModel):
-    access_token: str
-    token_type: str

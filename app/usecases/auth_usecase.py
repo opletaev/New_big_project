@@ -6,11 +6,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.core.config import settings
-from app.repositories.user_repo import UserRepository
+from app.repositories.user import UserRepository
 from app.schemas.auth_schemas import SAuthUser
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def get_token(request: Request):
         token = request.cookies.get("access_token")
@@ -20,6 +21,7 @@ def get_token(request: Request):
                 status_code=401, detail="Access token is missing."
             )
         return token
+
 
 class AuthUsecase:
     
@@ -34,6 +36,7 @@ class AuthUsecase:
             # Описать исключение
             raise HTTPException
         return user
+    
     
     def get_user_id (token: str = Depends(get_token)):
         try:
@@ -56,7 +59,9 @@ class AuthUsecase:
             raise HTTPException
         return user_id
     
+    
 ##### Возможно, нужно вынести в другой файл #####
+      
       
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()

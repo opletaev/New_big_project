@@ -1,4 +1,7 @@
 from uuid import UUID
+
+from fastapi import HTTPException
+
 from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest
 from app.usecases.user_usecase import UserUsecase
 
@@ -7,10 +10,15 @@ class UserService:
     def __init__(self):
             self.usecase = UserUsecase()
             
-    async def register_user(self, body: SCreateUser):
-        # Cделать проверку на существование пользователя
-        return await self.usecase.create_user(body)
-    
+    async def create_user(self, body: SCreateUser):
+        if await self.usecase.get_user_by_factory_employee_id(body.factory_employee_id):
+            raise HTTPException(
+                status_code=409, 
+                detail=f"User with factory employee id:{body.factory_employee_id} is already exists." 
+            )
+        user = await self.usecase.create_user_with_profile(body)
+        return user
+        
     async def delete_user(self, user_id: int):
         return await self.usecase.delete_user(user_id)
     
