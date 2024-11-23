@@ -1,3 +1,4 @@
+from uuid import UUID
 from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest
 from app.usecases.user_usecase import UserUsecase
 
@@ -16,5 +17,5 @@ class UserService:
     async def get_user_by_factory_employee_id(self, factory_employee_id: int):
         return await self.usecase.get_user_by_factory_employee_id(factory_employee_id)
     
-    async def update_user(self, body: SUpdateUserRequest):
-        return await self.usecase.update_user(body)
+    async def update_user(self, body: SUpdateUserRequest, user_id: UUID):
+        return await self.usecase.update_user(body, user_id)

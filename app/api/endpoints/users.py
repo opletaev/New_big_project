@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.services.user_service import UserService
 from app.schemas.user_schemas import (
@@ -7,6 +7,7 @@ from app.schemas.user_schemas import (
     SShowUser,
     SUpdateUserRequest,
     )
+from app.usecases.auth_usecase import AuthUsecase
 
 
 router = APIRouter(
@@ -34,7 +35,11 @@ async def get_user(factory_employee_id: int):
     user = await UserService().get_user_by_factory_employee_id(factory_employee_id)
     return user
 
-@router.post("/update")
-async def update_user(body: SUpdateUserRequest):
-    user = await UserService().update_user(body)
+
+@router.patch("/update")
+async def update_user(
+    body: SUpdateUserRequest, 
+    user_id: UUID = Depends(AuthUsecase.get_user_id)
+    ):
+    user = await UserService().update_user(body, user_id)
     return user

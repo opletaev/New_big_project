@@ -4,45 +4,59 @@ import uuid
 
 from fastapi import HTTPException
 from pydantic import (
-    BaseModel, 
-    ValidationInfo, 
-    field_validator, 
-    constr
-    )
+    BaseModel, Field, field_validator,
+)
 
 LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
-  
+PHONE_MATCH_PATTERN = re.compile(r"^[0-9()+\-]+$")
 
 class SShowUser(BaseModel):
     user_id: uuid.UUID
-    factory_employee_id: int
-    work_phone: str
-    name: str
     surname: str
+    name: str
     patronymic: str
+    factory_employee_id: int
     division: str
+    work_phone: str
     is_active: bool
     
     
 class SCreateUser(BaseModel):
-    factory_employee_id: int
-    work_phone: str
-    password: str
-    name: str
-    surname: str
-    patronymic: str
-    division: str    
+    factory_employee_id: int = Field(
+        title="Табельный номер",
+        )
+    surname: str = Field(
+        title="Фамилия",
+        max_length=25,
+        pattern=LETTER_MATCH_PATTERN,
+        )
+    name: str = Field(
+        title="Имя",
+        max_length=25,
+        pattern=LETTER_MATCH_PATTERN,
+        )
+    patronymic: str = Field(
+        title="Отчество",
+        max_length=25,
+        pattern=LETTER_MATCH_PATTERN,
+        )
+    division: str = Field(
+        title="Подразлеление",
+        max_length=25,
+        )
+    work_phone: str = Field(
+        title="Рабочий телефон",
+        max_length=16,
+        pattern=PHONE_MATCH_PATTERN,
+        )
+    password: str   
     
     
     @field_validator("name", "surname", "patronymic")
     @classmethod
-    def validate_name(cls, value, info: ValidationInfo) -> str:
-        if not LETTER_MATCH_PATTERN.match(value):
-            raise HTTPException(
-                status_code=422, detail=f"{info.field_name} should contains only letters"
-            )
-        return value
-
+    def titled_field(cls, value) -> str:
+        return value.title()
+    
 
 class SDeleteUserResponse(BaseModel):
     deleted_user_id: uuid.UUID
@@ -53,21 +67,13 @@ class SUpdatedUserResponse(BaseModel):
     
     
 class SUpdateUserRequest(BaseModel):
-    work_phone: Optional[str]
-    name: Optional[str]
-    surname: Optional[str]
-    patronymic: Optional[str]
-    division: Optional[str]
-    
-    @field_validator("name", "surname", "patronymic")
-    @classmethod
-    def validate_name(cls, value, info: ValidationInfo) -> str:
-        if not LETTER_MATCH_PATTERN.match(value):
-            raise HTTPException(
-                status_code=422, detail=f"{info.field_name} should contains only letters"
-            )
-        return value
-    
+    work_phone: str = Field(
+        title="Рабочий телефон",
+        max_length=16,
+        pattern=PHONE_MATCH_PATTERN,
+        )
+    division: str
+        
 
 class SToken(BaseModel):
     access_token: str

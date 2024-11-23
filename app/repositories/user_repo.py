@@ -68,9 +68,8 @@ class UserRepository:  #(AbstractRepository[SUser]):
         async with async_session_maker() as session:
             query = (
                 update(User)
-                .where(id == user_id)
+                .where(User.id == user_id)
                 .values(**kwargs)
-                .returning(User)
             )
-            result = await session.execute(query)
-            return result.scalar_one_or_none()
+            await session.execute(query)
+            await session.commit()

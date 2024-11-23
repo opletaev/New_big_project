@@ -1,8 +1,7 @@
 from datetime import UTC, datetime, timedelta
-from urllib.request import Request
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -13,6 +12,14 @@ from app.schemas.auth_schemas import SAuthUser
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def get_token(request: Request):
+        token = request.cookies.get("access_token")
+        if not token:
+            # Описать исключение
+            raise HTTPException(
+                status_code=401, detail="Access token is missing."
+            )
+        return token
 
 class AuthUsecase:
     
@@ -24,15 +31,9 @@ class AuthUsecase:
             body.password,
             user.hashed_password,
             ):
-            return None
-        return user
-    
-    def get_token(request: Request):
-        token = request.cookies.get("access_token")
-        if not token:
             # Описать исключение
             raise HTTPException
-        return token
+        return user
     
     def get_user_id (token: str = Depends(get_token)):
         try:
@@ -55,7 +56,7 @@ class AuthUsecase:
             raise HTTPException
         return user_id
     
-    ##### Возможно, нужно вынести в другой файл #####
+##### Возможно, нужно вынести в другой файл #####
       
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
@@ -66,7 +67,7 @@ def create_access_token(data: dict) -> str:
     encoded_jwt = jwt.encode(
         to_encode, settings.SECRET_KEY, settings.ALGORITHM,
         )    
-    return encoded_jwt
+    return encoded_jwt  
     
 def get_hashed_password(password: str):
     return pwd_context.hash(password)

@@ -45,9 +45,11 @@ class UserUsecase:
             )
         return user
 
-    async def update_user(self, body:SUpdateUserRequest):
+    async def update_user(self, body:SUpdateUserRequest, user_id: UUID):
+        print(body, '\n', user_id)
         user_repo = self.repo()
         # Добавить считывание user_id
-        user_id = AuthUsecase.get_user_id()
+        body = {key: value for key, value in body if value}
+        print(body)
         user = await user_repo.update_user(user_id, **body)
         return user
