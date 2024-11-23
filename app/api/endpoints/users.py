@@ -1,6 +1,8 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, Response
 
+
+from app.dependencies.user import get_user_usecase
 from app.services.user_service import UserService
 from app.schemas.user_schemas import (
     SCreateUser,
@@ -8,6 +10,8 @@ from app.schemas.user_schemas import (
     SUpdateUserRequest,
     )
 from app.usecases.auth_usecase import AuthUsecase
+from app.usecases.user_usecase import UserUsecase
+
 
 
 router = APIRouter(
@@ -17,23 +21,29 @@ router = APIRouter(
     
 
 @router.post("/register")  # Добавить проеврку отсутствия токена
-async def create_user(body: SCreateUser) -> SShowUser:
-    user = await UserService().create_user(body)
+async def create_user(
+    body: SCreateUser, usecase: UserUsecase = Depends(get_user_usecase)
+    ) -> SShowUser:
+    user = await UserService(usecase).create_user(body)
     return user
 
 
 @router.delete("/delete")  # ДЛЯ ОТЛАДКИ - доступно без токена
 ##### Если осталять, то сделать проверку пользователя отсутвие полученных кабелей ##### 
-async def delete_user(user_id: UUID):
+async def delete_user(
+    user_id: UUID, usecase: UserUsecase = Depends(get_user_usecase)
+    ):
     # Дописать, что возвращает эта функция
-    user = await UserService().delete_user(user_id)
+    user = await UserService(usecase).delete_user(user_id)
     return user
 
 
 @router.get("/")  # Доступно без токена
-async def get_user_by_factory_employee_id(factory_employee_id: int):
+async def get_user_by_factory_employee_id(
+    factory_employee_id: int, usecase: UserUsecase = Depends(get_user_usecase)
+    ):
     # Дописать, что возвращает эта функция
-    user = await UserService().get_user_by_factory_employee_id(factory_employee_id)
+    user = await UserService(usecase).get_user_by_factory_employee_id(factory_employee_id)
     return user
 
 
@@ -44,7 +54,8 @@ async def get_user_by_factory_employee_id(factory_employee_id: int):
 @router.patch("/update")  # Токен работает, обновление - нет.
 async def update_user(
     body: SUpdateUserRequest,
-    user_id: UUID = Depends(AuthUsecase.get_user_id)
+    user_id: UUID = Depends(AuthUsecase.get_user_id),
+    usecase: UserUsecase = Depends(get_user_usecase)
     ):
-    user = await UserService().update_user(body, user_id)
+    user = await UserService(usecase).update_user(body, user_id)
     return user

@@ -4,9 +4,9 @@ from app.usecases.auth_usecase import AuthUsecase, create_access_token
 
 
 class AuthService:
-    def __init__(self):
-            self.usecase = AuthUsecase()
-
+    def __init__(self, usecase: AuthUsecase):
+            self.usecase = usecase
+            
     async def login_user(self, response: Response, body: SAuthUser):
         # Дописать, что возвращает функция
         user = await self.usecase.login_user(body)

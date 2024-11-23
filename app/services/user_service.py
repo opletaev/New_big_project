@@ -7,8 +7,8 @@ from app.usecases.user_usecase import UserUsecase
 
 
 class UserService:
-    def __init__(self):
-            self.usecase = UserUsecase()
+    def __init__(self, usecase: UserUsecase):
+        self.usecase = usecase
             
     async def create_user(self, body: SCreateUser):
         if await self.usecase.get_user_by_factory_employee_id(body.factory_employee_id):

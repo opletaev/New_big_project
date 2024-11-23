@@ -1,3 +1,4 @@
+from sqlalchemy import delete
 from app.core.database import async_session_maker
 from app.models.user import User, UserProfile
 from app.usecases.auth_usecase import get_hashed_password
@@ -52,3 +53,12 @@ async def create_users_from_dicts(
             print(f"Ошибка при создании пользователей: {e}")
             raise 
         return users_list
+    
+    
+async def delete_users():
+    async with async_session_maker() as session:
+        query = (
+            delete(User)
+        )
+        await session.execute(query)
+        await session.commit()

@@ -24,11 +24,13 @@ def get_token(request: Request):
 
 
 class AuthUsecase:
+    def __init__(self, repository: UserRepository):
+        self.user_repo = repository
     
     async def login_user(self, body: SAuthUser):
     # Дописать, что возвращает функция
         print(body.factory_employee_id, type(body.factory_employee_id))
-        user = await UserRepository().get_user_by_factory_employee_id(body.factory_employee_id)
+        user = await self.user_repo.get_user_by_factory_employee_id(body.factory_employee_id)
         if not user or not verify_password(
             body.password,
             user.hashed_password,
@@ -74,8 +76,10 @@ def create_access_token(data: dict) -> str:
         )    
     return encoded_jwt  
     
+    
 def get_hashed_password(password: str):
     return pwd_context.hash(password)
+    
     
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)

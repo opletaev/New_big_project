@@ -5,10 +5,12 @@ from sqlalchemy import delete, select, update
 from app.core.database import async_session_maker
 from app.models.user import User
 from app.models.user import UserProfile
+from app.repositories.base import BaseRepository
 from app.schemas.user_schemas import SCreateUser
 
 
-class UserRepository:  #(AbstractRepository[SUser]):       
+class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
+    model = User      
     
     async def create_user_with_profile(
         self,
@@ -42,16 +44,6 @@ class UserRepository:  #(AbstractRepository[SUser]):
                 raise e
 
             return new_user, user_profile
-    
-    
-    async def delete_user(self, user_id: UUID):
-        async with async_session_maker() as session:
-            query = (
-                delete(User)
-                .where(User.id == user_id)
-            )
-            await session.execute(query)
-            await session.commit()
     
     
     async def get_user_by_factory_employee_id(
