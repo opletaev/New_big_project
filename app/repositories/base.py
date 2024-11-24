@@ -33,10 +33,10 @@ class BaseRepository:
     @classmethod
     async def add(cls, **values):
         async with async_session_maker() as session:
-            new_instance = cls.model(**values)
+            new_instance = cls.model(**values) # type: ignore
             session.add(new_instance)
             try:
-                session.commit()
+                await session.commit()
             except SQLAlchemyError as e:
                 print(e)
                 await session.rollback()
@@ -47,10 +47,10 @@ class BaseRepository:
     @classmethod
     async def add_all(cls, instance: List[Dict[str, Any]]):
         async with async_session_maker() as session:
-            new_instance = [cls.model(**values) for values in instance]
+            new_instance = [cls.model(**values) for values in instance] # type: ignore
             session.add_all(new_instance)
             try:
-                session.commit()
+                await session.commit()
             except SQLAlchemyError as e:
                 print(e)
                 await session.rollback()
@@ -61,7 +61,7 @@ class BaseRepository:
     @classmethod
     async def get_all(cls):
         async with async_session_maker() as session:
-            query = select(cls.model)
+            query = await select(cls.model) # type: ignore
             result = await session.execute(query)
             records = result.scalars().all()
             return records
@@ -71,8 +71,8 @@ class BaseRepository:
     async def get_by_id(cls, instance_id: UUID | int):
         async with async_session_maker() as session:
             query = (
-                select(cls.model)
-                .where(cls.model.id == instance_id)
+                select(cls.model) # type: ignore
+                .where(cls.model.id == instance_id) # type: ignore
                 )
             result = await session.execute(query)
             instance = result.scalar_one_or_none()
@@ -83,8 +83,8 @@ class BaseRepository:
     async def delete_instance(cls, instance_id: UUID | int):
         async with async_session_maker() as session:
             query = (
-                delete(cls.model)
-                .where(cls.model.id == instance_id)
+                delete(cls.model) # type: ignore
+                .where(cls.model.id == instance_id) # type: ignore
                 )
             await session.execute(query)
             await session.commit()

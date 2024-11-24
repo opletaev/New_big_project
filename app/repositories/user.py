@@ -43,7 +43,7 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
                 await session.rollback()
                 raise e
 
-            return new_user, user_profile
+            return new_user, user_profile # type: ignore
     
     
     async def get_user_by_factory_employee_id(

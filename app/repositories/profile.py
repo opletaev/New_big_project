@@ -9,6 +9,7 @@ from app.models.user import UserProfile
 class ProfileRepository:  #(AbstractRepository[SUser]):       
     
     async def create_profile(
+        self,
         user_id: UUID,        
         phone_number: str,
         name: str,

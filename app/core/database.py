@@ -9,14 +9,16 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.core.config import settings
 
-annotated_not_nullable_str = Annotated[str, mapped_column(nullable=False)]
 
 DATABASE_URL = settings.DATABASE_URL
 DATEBASE_PARAMS = {}
 
-engine = create_async_engine(DATABASE_URL, **DATEBASE_PARAMS)
 
+engine = create_async_engine(DATABASE_URL, **DATEBASE_PARAMS)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+
+annotated_not_nullable_str = Annotated[str, mapped_column(nullable=False)]
 
 
 class Base(AsyncAttrs, DeclarativeBase):

@@ -28,10 +28,15 @@ class User(Base):
     __tablename__ = "users"
     
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID, primary_key=True, default=uuid.uuid4, unique=True
+        UUID, 
+        primary_key=True, 
+        default=uuid.uuid4, 
+        unique=True
         )
     factory_employee_id: Mapped[int] = mapped_column(
-        nullable=False, unique=True, index=True
+        nullable=False, 
+        unique=True, 
+        index=True
         )
     hashed_password: Mapped[annotated_not_nullable_str]
     profile: Mapped["UserProfile"] = relationship(
@@ -53,7 +58,8 @@ class UserProfile(Base):
     phone_number: Mapped[annotated_not_nullable_str]
     is_active: Mapped[bool]
     role: Mapped[UserRoleEnun] = mapped_column(
-        default=UserRoleEnun.USER, server_default=UserRoleEnun.USER.name
+        default=UserRoleEnun.USER, 
+        server_default=UserRoleEnun.USER.name
         )
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey('users.id', ondelete='CASCADE'),
