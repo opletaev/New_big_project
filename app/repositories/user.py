@@ -42,8 +42,8 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
             except Exception as e:
                 await session.rollback()
                 raise e
-
-            return new_user, user_profile # type: ignore
+            
+            return new_user.id
     
     
     async def get_user_by_factory_employee_id(

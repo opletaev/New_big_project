@@ -46,14 +46,16 @@ async def delete_user(
 async def get_user_by_factory_employee_id(
     factory_employee_id: int, 
     usecase: UserUsecase = Depends(get_user_usecase)
-    ):
+    ) -> SShowUser | None:
     # Дописать, что возвращает эта функция
     user = await UserService(usecase).get_user_by_factory_employee_id(factory_employee_id)
     return user
 
 
 @router.get("/all")
-async def get_all_users(usecase: UserUsecase = Depends(get_user_usecase)):
+async def get_all_users(
+    usecase: UserUsecase = Depends(get_user_usecase)
+    ) -> list[SShowUser]:
     users = await UserService(usecase).get_all_users()
     return users
 

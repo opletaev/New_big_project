@@ -13,7 +13,7 @@ from app.schemas.auth_schemas import SAuthUser
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_token(request: Request):
+def get_token(request: Request) -> str:
         token = request.cookies.get("access_token")
         if not token:
             # Описать исключение
@@ -27,9 +27,11 @@ class AuthUsecase:
     def __init__(self, repository: UserRepository):
         self.user_repo = repository
     
-    async def login_user(self, body: SAuthUser):
-    # Дописать, что возвращает функция
-        print(body.factory_employee_id, type(body.factory_employee_id))
+    async def check_user(
+        self, 
+        body: SAuthUser,
+        ) -> UUID:
+        # Переделать функцию для поиска user'a
         user = await self.user_repo.get_user_by_factory_employee_id(body.factory_employee_id)
         if not user or not verify_password(
             body.password,
@@ -37,10 +39,10 @@ class AuthUsecase:
             ):
             # Описать исключение
             raise HTTPException
-        return user
+        return user.id
     
     
-    def get_user_id (token: str = Depends(get_token)):
+    def get_user_id (token: str = Depends(get_token)) -> UUID:
         try:
             payload = jwt.decode(
                 token, settings.SECRET_KEY, settings.ALGORITHM
@@ -77,10 +79,10 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt  
     
     
-def get_hashed_password(password: str):
+def get_hashed_password(password: str) -> str:
     return pwd_context.hash(password)
     
     
-def verify_password(plain_password: str, hashed_password: str):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
     
