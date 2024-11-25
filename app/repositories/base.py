@@ -61,7 +61,7 @@ class BaseRepository:
     @classmethod
     async def get_all(cls):
         async with async_session_maker() as session:
-            query = await select(cls.model) # type: ignore
+            query = select(cls.model) # type: ignore
             result = await session.execute(query)
             records = result.scalars().all()
             return records

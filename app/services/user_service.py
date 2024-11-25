@@ -22,6 +22,9 @@ class UserService:
     async def delete_user(self, user_id: int):
         return await self.usecase.delete_user(user_id)
     
+    async def get_all_users(self):
+        return await self.usecase.get_all_users()
+    
     async def get_user_by_factory_employee_id(self, factory_employee_id: int):
         return await self.usecase.get_user_by_factory_employee_id(factory_employee_id)
     

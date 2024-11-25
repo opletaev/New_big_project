@@ -1,5 +1,7 @@
+from typing import List
 from uuid import UUID
 
+from app.models.user import User
 from app.schemas.user_schemas import SCreateUser, SShowUser, SUpdateUserRequest
 from app.repositories.user import UserRepository
 from app.usecases.auth_usecase import get_hashed_password
@@ -31,6 +33,11 @@ class UserUsecase:
     async def delete_user(self, user_id: UUID):
         user_repo = self.repository
         await user_repo.delete_instance(instance_id=user_id)
+        
+        
+    async def get_all_users(self):
+        users = await self.repository.get_all()
+        return users
 
 
     async def get_user_by_factory_employee_id(self, factory_employee_id: int):

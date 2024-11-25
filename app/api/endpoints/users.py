@@ -1,8 +1,10 @@
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, Response
 
 
 from app.dependencies.user import get_user_usecase
+from app.models.user import User
 from app.services.user_service import UserService
 from app.schemas.user_schemas import (
     SCreateUser,
@@ -22,7 +24,8 @@ router = APIRouter(
 
 @router.post("/register")  # Добавить проеврку отсутствия токена
 async def create_user(
-    body: SCreateUser, usecase: UserUsecase = Depends(get_user_usecase)
+    body: SCreateUser, 
+    usecase: UserUsecase = Depends(get_user_usecase)
     ) -> SShowUser:
     user = await UserService(usecase).create_user(body)
     return user
@@ -31,7 +34,8 @@ async def create_user(
 @router.delete("/delete")  # ДЛЯ ОТЛАДКИ - доступно без токена
 ##### Если осталять, то сделать проверку пользователя отсутвие полученных кабелей ##### 
 async def delete_user(
-    user_id: UUID, usecase: UserUsecase = Depends(get_user_usecase)
+    user_id: UUID, 
+    usecase: UserUsecase = Depends(get_user_usecase)
     ):
     # Дописать, что возвращает эта функция
     user = await UserService(usecase).delete_user(user_id)
@@ -40,11 +44,18 @@ async def delete_user(
 
 @router.get("/")  # Доступно без токена
 async def get_user_by_factory_employee_id(
-    factory_employee_id: int, usecase: UserUsecase = Depends(get_user_usecase)
+    factory_employee_id: int, 
+    usecase: UserUsecase = Depends(get_user_usecase)
     ):
     # Дописать, что возвращает эта функция
     user = await UserService(usecase).get_user_by_factory_employee_id(factory_employee_id)
     return user
+
+
+@router.get("/all")
+async def get_all_users(usecase: UserUsecase = Depends(get_user_usecase)):
+    users = await UserService(usecase).get_all_users()
+    return users
 
 
 # @router.get("/")  # Доступно по токену
