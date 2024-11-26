@@ -1,12 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import update
 
 from app.core.database import async_session_maker
 from app.models.user import User
 from app.models.user import UserProfile
 from app.repositories.base import BaseRepository
-from app.schemas.user_schemas import SCreateUser
+from app.schemas.user_schemas import SUser, SUserProfile
 
 
 class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
@@ -14,26 +14,26 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
     
     async def create_user_with_profile(
         self,
-        body: SCreateUser,
-        hashed_password: str,
+        user: SUser,
+        user_info: SUserProfile,
     ) -> User:
         async with async_session_maker() as session:
             try:
                 new_user = User(
-                        factory_employee_id=body.factory_employee_id,
-                        hashed_password=hashed_password,
+                        factory_employee_id=user.factory_employee_id,
+                        hashed_password=user.hashed_password,
                         )
                 session.add(new_user)
                 await session.flush()
 
                 user_profile = UserProfile(
-                    name=body.name,
-                    surname=body.surname,
-                    patronymic=body.patronymic,
-                    division=body.division,
-                    phone_number=body.phone_number,
+                    name=user_info.name,
+                    surname=user_info.surname,
+                    patronymic=user_info.patronymic,
+                    division=user_info.division,
+                    phone_number=user_info.phone_number,
                     is_active=True,
-                    role="Пользователь",
+                    role="Пользователь",  # Не забыть заменить на user_info.role
                     user_id=new_user.id,
                     )
                 session.add(user_profile)
@@ -44,20 +44,6 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
                 raise e
             
             return new_user.id
-    
-    
-    async def get_user_by_factory_employee_id(
-        self, 
-        factory_employee_id: int,
-        ):  # Дописать, что возвращает функция
-        print(factory_employee_id)
-        async with async_session_maker() as session:
-            query = (
-                select(User)
-                .where(User.factory_employee_id == factory_employee_id)
-                )
-            result = await session.execute(query)
-            return result.scalar_one_or_none()
         
         
     async def update_user(

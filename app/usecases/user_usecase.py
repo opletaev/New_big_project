@@ -1,16 +1,15 @@
 from uuid import UUID
 
+from pydantic import create_model
+
 from app.models.user import User
-from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest
+from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest, SUser, SUserProfile
 from app.repositories.user import UserRepository
-from app.usecases.auth_usecase import get_hashed_password
+from app.utils import get_hashed_password
 
 
 class UserUsecase:
-    def __init__(
-        self, 
-        repository: UserRepository,
-        ) -> None:
+    def __init__(self, repository: UserRepository) -> None:
         self.repository = repository
 
 
@@ -18,10 +17,14 @@ class UserUsecase:
         self, 
         body: SCreateUser,
         ) -> UUID:
-        user_repo = self.repository
-        hashed_password=get_hashed_password(body.password)
-        user_id = await user_repo.create_user_with_profile(
-            body, hashed_password
+        user = SUser(
+            factory_employee_id=body.factory_employee_id,
+            hashed_password=get_hashed_password(body.password),
+            )
+        user_info = body
+        user_id = await self.repository.create_user_with_profile(
+            user, 
+            user_info,
             )
         return user_id
 
@@ -30,36 +33,35 @@ class UserUsecase:
         self, 
         user_id: UUID,
         ) -> None:
-        user_repo = self.repository
-        await user_repo.delete_instance(instance_id=user_id)
+        await self.repository.delete_by_id(instance_id=user_id)
         
         
     async def get_all_users(self) -> list[User]:
-        users = await self.repository.get_all()
+        users = await self.repository.find_all()
         return users
     
     
-    async def get_user_by_id(
+    async def get_user_info_by_id(
         self, 
         user_id: UUID,
         ) -> User | None:
-        user = await self.repository.get_by_id(user_id)
+        user = await self.repository.find_by_id(user_id)
         return user
 
 
-    async def get_user_by_factory_employee_id(
+    async def get_user_info_by_factory_employee_id(
         self, 
         factory_employee_id: int,
         ) -> User | None:
-        print(factory_employee_id)
-        user_repo = self.repository
-        user = await user_repo.get_user_by_factory_employee_id(
-            factory_employee_id=factory_employee_id
-            )
-        if not user:
-            return None
+        FilterModel = create_model(
+            "FilterModel",
+            factory_employee_id=(int, ...),
+        )
         
-        return user
+        user_info = await self.repository.find_by_filter(
+            FilterModel(factory_employee_id=factory_employee_id),
+        )
+        return user_info
         
 
     async def update_user(
@@ -68,9 +70,8 @@ class UserUsecase:
         user_id: UUID,
         ):
         print(body, '\n', user_id)
-        user_repo = self.repository
         # Добавить считывание user_id
         body = {key: value for key, value in body if value}
         print(body)
-        user = await user_repo.update_user(user_id, **body)
+        user = await self.repository.update_user(user_id, **body)
         return user

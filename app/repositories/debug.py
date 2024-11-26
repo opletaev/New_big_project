@@ -1,7 +1,8 @@
 from sqlalchemy import delete
 from app.core.database import async_session_maker
 from app.models.user import User, UserProfile
-from app.usecases.auth_usecase import get_hashed_password
+from app.utils import get_hashed_password
+
 
 users_data = [
     {

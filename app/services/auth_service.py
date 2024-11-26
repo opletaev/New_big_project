@@ -1,6 +1,8 @@
 from fastapi import Response
+
 from app.schemas.auth_schemas import SAuthUser
-from app.usecases.auth_usecase import AuthUsecase, create_access_token
+from app.usecases.auth_usecase import AuthUsecase
+from app.utils import create_access_token
 
 
 class AuthService:

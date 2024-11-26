@@ -1,38 +1,27 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 from app.repositories.user import UserRepository
 from app.schemas.auth_schemas import SAuthUser
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def get_token(request: Request) -> str:
-        token = request.cookies.get("access_token")
-        if not token:
-            # Описать исключение
-            raise HTTPException(
-                status_code=401, detail="Access token is missing."
-            )
-        return token
+from app.usecases.user_usecase import UserUsecase
+from app.utils import get_token, verify_password
 
 
 class AuthUsecase:
-    def __init__(self, repository: UserRepository):
-        self.user_repo = repository
+    def __init__(self, user_usecase: UserUsecase):
+        self.user_usecase = user_usecase
     
     async def check_user(
         self, 
         body: SAuthUser,
         ) -> UUID:
-        # Переделать функцию для поиска user'a
-        user = await self.user_repo.get_user_by_factory_employee_id(body.factory_employee_id)
+        user = await self.user_usecase.get_user_info_by_factory_employee_id(
+            factory_employee_id=body.factory_employee_id,
+            )
         if not user or not verify_password(
             body.password,
             user.hashed_password,
@@ -62,27 +51,4 @@ class AuthUsecase:
             # Описать исключение
             raise HTTPException
         return user_id
-    
-    
-##### Возможно, нужно вынести в другой файл #####
-      
-      
-def create_access_token(data: dict) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(UTC) + timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    to_encode.update({"exp": expire.timestamp()})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, settings.ALGORITHM,
-        )    
-    return encoded_jwt  
-    
-    
-def get_hashed_password(password: str) -> str:
-    return pwd_context.hash(password)
-    
-    
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
     

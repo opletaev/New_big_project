@@ -43,12 +43,12 @@ async def delete_user(
 
 
 @router.get("/")  # Доступно без токена
-async def get_user_by_factory_employee_id(
+async def get_user_info_by_factory_employee_id(
     factory_employee_id: int, 
     usecase: UserUsecase = Depends(get_user_usecase)
     ) -> SShowUser | None:
     # Дописать, что возвращает эта функция
-    user = await UserService(usecase).get_user_by_factory_employee_id(factory_employee_id)
+    user = await UserService(usecase).get_user_info_by_factory_employee_id(factory_employee_id)
     return user
 
 
