@@ -27,7 +27,7 @@ class SUserProfile(BaseModel):
     division: DivisionEnum
     phone_number: str
     is_active: bool
-    role: UserRoleEnun
+    role: UserRoleEnun = Field(default="Пользователь")
     
     model_config = ConfigDict(from_attributes=True)
     
@@ -78,6 +78,9 @@ class SCreateUser(BaseModel):
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
         examples=["8(800)555-35-35", "04-51"],
+        )
+    role: UserRoleEnun = Field(
+        default="Пользователь",
         )
     
     @field_validator("name", "surname", "patronymic")

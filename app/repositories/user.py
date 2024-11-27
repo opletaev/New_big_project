@@ -33,7 +33,7 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
                     division=user_info.division,
                     phone_number=user_info.phone_number,
                     is_active=True,
-                    role="Пользователь",  # Не забыть заменить на user_info.role
+                    role=user_info.role,
                     user_id=new_user.id,
                     )
                 session.add(user_profile)
@@ -46,7 +46,7 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
             return new_user.id
         
         
-    async def update_user(
+    async def update_user(  # Вынести в BaseRepository
         self,
         user_id: UUID,
         **kwargs,

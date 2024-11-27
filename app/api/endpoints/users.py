@@ -65,7 +65,7 @@ async def get_all_users(
 @router.patch("/update")  # Токен работает, обновление - нет.
 async def update_user(
     body: SUpdateUserRequest,
-    user_id: UUID = Depends(AuthService.validate_token),
+    user_id: UUID = Depends(AuthService.verify_token),
     service: UserService = Depends(get_user_service)
     ):
     user = await UserUsecase(service).update_user(body, user_id)

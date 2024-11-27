@@ -5,7 +5,6 @@ from pydantic import create_model
 from app.models.user import User
 from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest, SUser, SUserProfile
 from app.repositories.user import UserRepository
-from app.utils import get_hashed_password
 
 
 class UserService:
@@ -16,10 +15,11 @@ class UserService:
     async def create_user_with_profile(
         self, 
         body: SCreateUser,
+        hashed_password: str,
         ) -> UUID:
         user = SUser(
             factory_employee_id=body.factory_employee_id,
-            hashed_password=get_hashed_password(body.password),
+            hashed_password=hashed_password,
             )
         user_info = body
         user_id = await self.repository.create_user_with_profile(
@@ -27,16 +27,6 @@ class UserService:
             user_info,
             )
         return user_id
-    
-    
-    # async def check_user(
-    #     self, 
-    #     body: SAuthUser,
-    #     ) -> UUID:
-    #     user = await self.get_user_info_by_factory_employee_id(
-    #         factory_employee_id=body.factory_employee_id,
-    #         )
-    #     return user.id
 
 
     async def get_all_users(self) -> list[User] | None:
@@ -60,7 +50,6 @@ class UserService:
             "FilterModel",
             factory_employee_id=(int, ...),
         )
-        
         user_info = await self.repository.find_one_or_none_by_filter(
             FilterModel(factory_employee_id=factory_employee_id),
         )
