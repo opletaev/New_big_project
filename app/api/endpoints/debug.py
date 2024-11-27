@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from app.services.debug_service import create_users_from_dicts, delete_all
+from app.service.debug_service import create_users_from_dicts, delete_all
+
 
 
 router = APIRouter(

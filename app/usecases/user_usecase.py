@@ -1,87 +1,47 @@
 from uuid import UUID
 
-from pydantic import create_model
+from fastapi import HTTPException
 
-from app.models.user import User
-from app.schemas.user_schemas import SCreateUser, SUpdateUserRequest, SUser, SUserProfile
-from app.repositories.user import UserRepository
-from app.utils import get_hashed_password
+from app.schemas.user_schemas import SCreateUser, SShowUser, SUpdateUserRequest
+from app.service.auth_service import UserService
 
 
 class UserUsecase:
-    def __init__(self, repository: UserRepository) -> None:
-        self.repository = repository
+    def __init__(self, service: UserService):
+        self.service = service
 
-
-    async def create_user_with_profile(
+            
+    async def create_user(
         self, 
         body: SCreateUser,
-        ) -> UUID:
-        user = SUser(
-            factory_employee_id=body.factory_employee_id,
-            hashed_password=get_hashed_password(body.password),
+        ) -> SShowUser:
+        if await self.service.get_user_info_by_factory_employee_id(body.factory_employee_id):
+            raise HTTPException(
+                status_code=409, 
+                detail=f"User with factory employee id:{body.factory_employee_id} is already exists." 
             )
-        user_info = body
-        user_id = await self.repository.create_user_with_profile(
-            user, 
-            user_info,
-            )
-        return user_id
-    
-    
-    # async def check_user(
-    #     self, 
-    #     body: SAuthUser,
-    #     ) -> UUID:
-    #     user = await self.get_user_info_by_factory_employee_id(
-    #         factory_employee_id=body.factory_employee_id,
-    #         )
-    #     return user.id
-
-
-    async def get_all_users(self) -> list[User] | None:
-        users = await self.repository.find_all()
-        return users
-    
-    
-    async def get_user_info_by_id(
-        self, 
-        user_id: UUID,
-        ) -> User | None:
-        user = await self.repository.find_one_or_none_by_id(user_id)
+        user_id = await self.service.create_user_with_profile(body)
+        user = await self.service.get_user_info_by_id(user_id)  # Для отладки. Потом убрать
         return user
-
-
+     
+        
+    async def delete_user(
+        self, 
+        user_id: int,
+        ) -> None:
+        return await self.service.delete_user(user_id)
+    
+    
+    async def get_all_users(self) -> list[SShowUser] | None:
+        return await self.service.get_all_users()
+    
+    
     async def get_user_info_by_factory_employee_id(
         self, 
         factory_employee_id: int,
-        ) -> User | None:
-        FilterModel = create_model(
-            "FilterModel",
-            factory_employee_id=(int, ...),
-        )
-        
-        user_info = await self.repository.find_one_or_none_by_filter(
-            FilterModel(factory_employee_id=factory_employee_id),
-        )
-        return user_info
+        ) -> SShowUser:
+        return await self.service.get_user_info_by_factory_employee_id(factory_employee_id)
     
     
-    async def delete_user(
-        self, 
-        user_id: UUID,
-        ) -> None:
-        await self.repository.delete_by_id(instance_id=user_id)
-        
-
-    async def update_user(
-        self, 
-        body: SUpdateUserRequest, 
-        user_id: UUID,
-        ):
-        print(body, '\n', user_id)
-        # Добавить считывание user_id
-        body = {key: value for key, value in body if value}
-        print(body)
-        user = await self.repository.update_user(user_id, **body)
-        return user
+    async def update_user(self, body: SUpdateUserRequest, user_id: UUID):
+        return await self.service.update_user(body, user_id)
