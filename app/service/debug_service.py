@@ -14,19 +14,19 @@ class DebugUserService:
             "division": "Лаборатория 1",
             "phone_number": "00-00",
             "is_active": False,
-            } for i in range(1,6)
-        ]
-
+        }
+        for i in range(1, 6)
+    ]
 
     async def create_users_from_dicts(
-        self, users_data: list[dict] = users_data,
+        self,
+        users_data: list[dict] = users_data,
     ):
         for user_data in users_data:
             user_data = SCreateUser(**user_data)
             await UserService(UserRepository()).create_user_with_profile(body=user_data)
 
         return await UserService(UserRepository()).get_all_users()
-
 
     async def delete_all_users(self):
         await UserRepository.delete_all()

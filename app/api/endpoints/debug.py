@@ -8,6 +8,7 @@ router = APIRouter(
     tags=["Отладка"],
 )
 
+
 @router.post("/create_test_users")
 async def create_test_users():
     return await DebugUserService.create_users_from_dicts()

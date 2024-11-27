@@ -9,9 +9,9 @@ from app.repositories.base import BaseRepository
 from app.schemas.user_schemas import SUser, SUserProfile
 
 
-class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
-    model = User      
-    
+class UserRepository(BaseRepository):  # (AbstractRepository[SUser]):
+    model = User
+
     async def create_user_with_profile(
         self,
         user: SUser,
@@ -20,9 +20,9 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
         async with async_session_maker() as session:
             try:
                 new_user = User(
-                        factory_employee_id=user.factory_employee_id,
-                        hashed_password=user.hashed_password,
-                        )
+                    factory_employee_id=user.factory_employee_id,
+                    hashed_password=user.hashed_password,
+                )
                 session.add(new_user)
                 await session.flush()
 
@@ -35,27 +35,22 @@ class UserRepository(BaseRepository):  #(AbstractRepository[SUser]):
                     is_active=True,
                     role=user_info.role,
                     user_id=new_user.id,
-                    )
+                )
                 session.add(user_profile)
                 await session.commit()
-            
+
             except Exception as e:
                 await session.rollback()
                 raise e
-            
+
             return new_user.id
-        
-        
+
     async def update_user(  # Вынести в BaseRepository
         self,
         user_id: UUID,
         **kwargs,
-        ):  # Дописать, что возвращает функция
+    ):  # Дописать, что возвращает функция
         async with async_session_maker() as session:
-            query = (
-                update(User)
-                .where(User.id == user_id)
-                .values(**kwargs)
-            )
+            query = update(User).where(User.id == user_id).values(**kwargs)
             await session.execute(query)
             await session.commit()

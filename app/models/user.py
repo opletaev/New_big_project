@@ -11,7 +11,7 @@ class UserRoleEnun(StrEnum):
     USER = "Пользователь"
     MODERATOR = "Модератор"
     ADMIN = "Администратор"
-    
+
 
 class DivisionEnum(StrEnum):
     LAB1 = "Лаборатория 1"
@@ -22,35 +22,35 @@ class DivisionEnum(StrEnum):
     LAB7 = "Лаборатория 7"
     LAB8 = "Лаборатория 8"
     PDB = "ПДБ"
-        
+
 
 class User(Base):
     __tablename__ = "users"
-    
+
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID, 
-        primary_key=True, 
-        default=uuid.uuid4, 
-        unique=True
-        )
+        UUID,
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+    )
     factory_employee_id: Mapped[int] = mapped_column(
-        nullable=False, 
-        unique=True, 
-        index=True
-        )
+        nullable=False,
+        unique=True,
+        index=True,
+    )
     hashed_password: Mapped[annotated_not_nullable_str]
     profile: Mapped["UserProfile"] = relationship(
         "UserProfile",
         back_populates="user",
         uselist=False,
         lazy="joined",
-        cascade="all, delete-orphan" 
+        cascade="all, delete-orphan",
     )
-    
+
 
 class UserProfile(Base):
     __tablename__ = "profiles"
-    
+
     surname: Mapped[annotated_not_nullable_str]
     name: Mapped[annotated_not_nullable_str]
     patronymic: Mapped[annotated_not_nullable_str]
@@ -58,21 +58,15 @@ class UserProfile(Base):
     phone_number: Mapped[annotated_not_nullable_str]
     is_active: Mapped[bool]
     role: Mapped[UserRoleEnun] = mapped_column(
-        default=UserRoleEnun.USER, 
-        server_default=UserRoleEnun.USER.name
-        )
+        default=UserRoleEnun.USER, server_default=UserRoleEnun.USER.name
+    )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False, 
-        unique=True
-        )
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
     user: Mapped["User"] = relationship(
-        "User",
-        back_populates="profile",
-        uselist=False,
-        passive_deletes=True
-    ) 
-    
+        "User", back_populates="profile", uselist=False, passive_deletes=True
+    )
+
 
 # class Operation(Base):
 #     __tablename__ = "operations"

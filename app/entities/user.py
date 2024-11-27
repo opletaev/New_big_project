@@ -5,8 +5,8 @@ class User:
         name: str,
         surname: str,
         patronymic: str,
-        phone_number: str
-        ):
+        phone_number: str,
+    ):
         self.id = id
         self.name = name
         self.surname = surname
