@@ -32,7 +32,7 @@ class UserService:
         return await self.usecase.delete_user(user_id)
     
     
-    async def get_all_users(self) -> list[SShowUser]:
+    async def get_all_users(self) -> list[SShowUser] | None:
         return await self.usecase.get_all_users()
     
     

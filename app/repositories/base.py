@@ -31,9 +31,11 @@ class BaseRepository(Generic[T]):
     model: type[T]
     
     @classmethod
-    async def add(cls, **values) -> T:
+    async def add(cls, values: BaseModel) -> T:
+        value_dict = values.model_dump(exclude_unset=True)
+        
         async with async_session_maker() as session:
-            new_instance = cls.model(**values) # type: ignore
+            new_instance = cls.model(**value_dict) # type: ignore
             session.add(new_instance)
             try:
                 await session.commit()
@@ -45,30 +47,23 @@ class BaseRepository(Generic[T]):
         
     
     @classmethod
-    async def add_all(cls, instance: list[dict[str, Any]]) -> list[T]:
+    async def add_all(cls, instances: list[BaseModel]) -> list[T]:
+        values_list = [item.model_dump(exclude_unset=True) for item in instances]
+        
         async with async_session_maker() as session:
-            new_instance = [cls.model(**values) for values in instance] # type: ignore
-            session.add_all(new_instance)
+            new_instances = [cls.model(**values) for values in values_list] # type: ignore
+            session.add_all(new_instances)
             try:
                 await session.commit()
             except SQLAlchemyError as e:
                 print(e)
                 await session.rollback()
                 raise e
-            return new_instance
-    
+            return new_instances
         
-    @classmethod
-    async def find_all(cls) -> list[T]:
-        async with async_session_maker() as session:
-            query = select(cls.model) # type: ignore
-            result = await session.execute(query)
-            records = result.scalars().all()
-            return records
-    
         
     @classmethod    
-    async def find_by_id(cls, instance_id: UUID | int) -> T | None:
+    async def find_one_or_none_by_id(cls, instance_id: UUID | int) -> T | None:
         async with async_session_maker() as session:
             query = (
                 select(cls.model) # type: ignore
@@ -80,7 +75,7 @@ class BaseRepository(Generic[T]):
         
         
     @classmethod
-    async def find_by_filter(cls, filter: BaseModel) -> T | None:
+    async def find_one_or_none_by_filter(cls, filter: BaseModel) -> T | None:
         filter_dict = filter.model_dump(exclude_unset=True)
         
         async with async_session_maker() as session:
@@ -88,7 +83,16 @@ class BaseRepository(Generic[T]):
             result = await session.execute(query)
             result = result.scalar_one_or_none()
             return result
-                  
+    
+        
+    @classmethod
+    async def find_all(cls) -> list[T] | None:
+        async with async_session_maker() as session:
+            query = select(cls.model) # type: ignore
+            result = await session.execute(query)
+            records = result.scalars().all()
+            return records
+                
         
     @classmethod
     async def find_all_by_filter(cls, filter: dict[str, Any]) -> list[T]:
@@ -106,5 +110,15 @@ class BaseRepository(Generic[T]):
                 delete(cls.model) # type: ignore
                 .where(cls.model.id == instance_id) # type: ignore
                 )
+            await session.execute(query)
+            await session.commit()
+
+
+    @classmethod
+    async def delete_all(cls):
+        async with async_session_maker() as session:
+            query = (
+                delete(cls.model)
+            )
             await session.execute(query)
             await session.commit()

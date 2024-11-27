@@ -27,16 +27,19 @@ class UserUsecase:
             user_info,
             )
         return user_id
+    
+    
+    # async def check_user(
+    #     self, 
+    #     body: SAuthUser,
+    #     ) -> UUID:
+    #     user = await self.get_user_info_by_factory_employee_id(
+    #         factory_employee_id=body.factory_employee_id,
+    #         )
+    #     return user.id
 
 
-    async def delete_user(
-        self, 
-        user_id: UUID,
-        ) -> None:
-        await self.repository.delete_by_id(instance_id=user_id)
-        
-        
-    async def get_all_users(self) -> list[User]:
+    async def get_all_users(self) -> list[User] | None:
         users = await self.repository.find_all()
         return users
     
@@ -45,7 +48,7 @@ class UserUsecase:
         self, 
         user_id: UUID,
         ) -> User | None:
-        user = await self.repository.find_by_id(user_id)
+        user = await self.repository.find_one_or_none_by_id(user_id)
         return user
 
 
@@ -58,10 +61,17 @@ class UserUsecase:
             factory_employee_id=(int, ...),
         )
         
-        user_info = await self.repository.find_by_filter(
+        user_info = await self.repository.find_one_or_none_by_filter(
             FilterModel(factory_employee_id=factory_employee_id),
         )
         return user_info
+    
+    
+    async def delete_user(
+        self, 
+        user_id: UUID,
+        ) -> None:
+        await self.repository.delete_by_id(instance_id=user_id)
         
 
     async def update_user(

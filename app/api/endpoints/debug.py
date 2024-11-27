@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.repositories.debug import create_users_from_dicts, delete_users
+from app.services.debug_service import create_users_from_dicts, delete_all
 
 
 router = APIRouter(
@@ -15,4 +15,4 @@ async def create_test_users():
 
 @router.delete("/delete_all_users")
 async def delete_all_users():
-    return await delete_users()
+    return await delete_all()

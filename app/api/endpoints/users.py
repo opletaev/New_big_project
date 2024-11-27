@@ -55,7 +55,7 @@ async def get_user_info_by_factory_employee_id(
 @router.get("/all")
 async def get_all_users(
     usecase: UserUsecase = Depends(get_user_usecase)
-    ) -> list[SShowUser]:
+    ) -> list[SShowUser] | None:
     users = await UserService(usecase).get_all_users()
     return users
 
@@ -63,6 +63,7 @@ async def get_all_users(
 # @router.get("/")  # Доступно по токену
 # async def get_user_me():
 #     pass
+
 
 @router.patch("/update")  # Токен работает, обновление - нет.
 async def update_user(
