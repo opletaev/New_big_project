@@ -11,4 +11,4 @@ class UserException(HTTPException):
 
 class UserAlreadyExistsException(UserException):
     status_code = status.HTTP_409_CONFLICT
-    detail = "Такой пользователь уже существует"
+    detail = "Пользователь уже существует"

@@ -1,3 +1,5 @@
+from typing import Optional
+from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.user_schemas import SCreateUser
 from app.service.auth_service import AuthService
@@ -22,7 +24,7 @@ class DebugUserService:
     async def create_users_from_dicts(
         self,
         users_data: list[dict] = users_data,
-    ):
+    ) -> Optional[list[User]]:
         for user_data in users_data:
             user_data = SCreateUser(**user_data)
             hashed_password = AuthService(UserService).hashed_password(
@@ -35,5 +37,5 @@ class DebugUserService:
 
         return await UserService(UserRepository()).get_all_users()
 
-    async def delete_all_users(self):
+    async def delete_all_users(self) -> None:
         await UserRepository.delete_all()

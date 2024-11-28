@@ -1,4 +1,3 @@
-from email.policy import HTTP
 from fastapi import Response
 
 from app.exceptions.auth import IncorrectEmailOrPassword

@@ -1,9 +1,14 @@
+from typing import Optional
 from uuid import UUID
 
-from fastapi import HTTPException
-
+from app.exceptions.user import UserAlreadyExistsException
 from app.models.user import User
-from app.schemas.user_schemas import SCreateUser, SShowUser, SUpdateUserPasswordRequest, SUpdateUserProfileRequest
+from app.schemas.user_schemas import (
+    SCreateUser,
+    SShowUser,
+    SUpdateUserPasswordRequest,
+    SUpdateUserProfileRequest,
+)
 from app.service.auth_service import AuthService, UserService
 
 
@@ -14,14 +19,11 @@ class UserUsecase:
     async def create_user(
         self,
         body: SCreateUser,
-    ) -> SShowUser:
+    ) -> Optional[SShowUser]:
         if await self.service.get_user_info_by_factory_employee_id(
             body.factory_employee_id
         ):
-            raise HTTPException(
-                status_code=409,
-                detail=f"User with factory employee id:{body.factory_employee_id} is already exists.",
-            )  # Создать класс для исключения
+            raise UserAlreadyExistsException
         hashed_password = AuthService(self.service).hashed_password(
             body.password
         )  # Тут дерьмо какое-то. НАСТРОИТЬ ЗАВИСИМОСТИ
@@ -37,33 +39,32 @@ class UserUsecase:
     ) -> None:
         return await self.service.delete_user(user_id)
 
-    async def get_all_users(self) -> list[SShowUser] | None:
-        return await self.service.get_all_users()
+    async def get_user_by_id(self, user_id: UUID) -> Optional[User]:
+        return await self.service.get_user_info_by_id(user_id)
 
     async def get_user_info_by_factory_employee_id(
         self,
         factory_employee_id: int,
-    ) -> SShowUser:
+    ) -> Optional[SShowUser]:
         return await self.service.get_user_info_by_factory_employee_id(
             factory_employee_id
         )
+
+    async def get_all_users(self) -> Optional[list[SShowUser]]:
+        return await self.service.get_all_users()
 
     async def update_user_profile(
         self,
         user_id: UUID,
         body: SUpdateUserProfileRequest,
-    ) -> User:  # Для отладки. Потом None, наверно
+    ) -> Optional[User]:  # Для отладки. Потом None, наверно
         await self.service.update_user_profile(user_id, body)
         return await self.service.get_user_info_by_id(user_id)
-    
+
     async def update_user_password(
         self,
         user_id: UUID,
         password: SUpdateUserPasswordRequest,
     ) -> None:
-        hashed_password = AuthService(self.service).hashed_password(
-            password.password
-        )
+        hashed_password = AuthService(self.service).hashed_password(password.password)
         await self.service.update_user_password(user_id, hashed_password)
-
-        

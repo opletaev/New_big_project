@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import create_model
@@ -5,6 +6,7 @@ from pydantic import create_model
 from app.models.user import User
 from app.schemas.user_schemas import (
     SCreateUser,
+    SShowUser,
     SUpdateUserProfileRequest,
     SUser,
 )
@@ -31,21 +33,21 @@ class UserService:
         )
         return user_id
 
-    async def get_all_users(self) -> list[User] | None:
+    async def get_all_users(self) -> Optional[list[SShowUser]]:
         users = await self.repository.find_all()
         return users
 
     async def get_user_info_by_id(
         self,
         user_id: UUID,
-    ) -> User | None:
+    ) -> Optional[User]:
         user = await self.repository.find_one_or_none_by_id(user_id)
         return user
 
     async def get_user_info_by_factory_employee_id(
         self,
         factory_employee_id: int,
-    ) -> User | None:
+    ) -> Optional[User]:
         FilterModel = create_model(
             "FilterModel",
             factory_employee_id=(int, ...),
@@ -65,7 +67,7 @@ class UserService:
         self,
         user_id: UUID,
         hashed_password: str,
-    ):
+    ) -> None:
         FilterModel = create_model(
             "FilterModel",
             hashed_password=(str, ...),
@@ -79,8 +81,8 @@ class UserService:
         self,
         user_id: UUID,
         values: SUpdateUserProfileRequest,
-    ):
-        await UserRepository().update_user_profile(
+    ) -> None:
+        await self.repository.update_user_profile(
             user_id,
             values,
         )
