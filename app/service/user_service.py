@@ -5,9 +5,8 @@ from pydantic import create_model
 from app.models.user import User
 from app.schemas.user_schemas import (
     SCreateUser,
-    SUpdateUserRequest,
+    SUpdateUserProfileRequest,
     SUser,
-    SUserProfile,
 )
 from app.repositories.user import UserRepository
 
@@ -62,14 +61,26 @@ class UserService:
     ) -> None:
         await self.repository.delete_by_id(instance_id=user_id)
 
-    async def update_user(
+    async def update_user_password(
         self,
-        body: SUpdateUserRequest,
         user_id: UUID,
+        hashed_password: str,
     ):
-        print(body, "\n", user_id)
-        # Добавить считывание user_id
-        body = {key: value for key, value in body if value}
-        print(body)
-        user = await self.repository.update_user(user_id, **body)
-        return user
+        FilterModel = create_model(
+            "FilterModel",
+            hashed_password=(str, ...),
+        )
+        await self.repository.update_instance(
+            user_id,
+            FilterModel(hashed_password=hashed_password),
+        )
+
+    async def update_user_profile(
+        self,
+        user_id: UUID,
+        values: SUpdateUserProfileRequest,
+    ):
+        await UserRepository().update_user_profile(
+            user_id,
+            values,
+        )

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -20,13 +20,11 @@ class AuthService:
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def get_token_from_cookie(self, request: Request) -> str:
+    @staticmethod
+    def verify_token(request: Request) -> UUID:
         token = request.cookies.get("access_token")
         if not token:
             raise TokenIsNotPresentException
-        return token
-
-    def verify_token(self, token: str) -> UUID:
         try:
             payload = jwt.decode(
                 token,
@@ -44,7 +42,7 @@ class AuthService:
         user_id: UUID = payload.get("sub")
         if not user_id:
             raise TokenIsNotPresentException
-        return user_id  # Для отладки. Потом bool
+        return user_id
 
     def create_access_token(self, data: dict) -> str:
         to_encode = data.copy()

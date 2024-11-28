@@ -1,5 +1,5 @@
 from email.policy import HTTP
-from fastapi import HTTPException, Response
+from fastapi import Response
 
 from app.exceptions.auth import IncorrectEmailOrPassword
 from app.repositories.user import UserRepository

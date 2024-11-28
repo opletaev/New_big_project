@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from pydantic import BaseModel
 from sqlalchemy import update
 
 from app.core.database import async_session_maker
@@ -45,12 +46,20 @@ class UserRepository(BaseRepository):  # (AbstractRepository[SUser]):
 
             return new_user.id
 
-    async def update_user(  # Вынести в BaseRepository
+    async def update_user_profile(
         self,
         user_id: UUID,
-        **kwargs,
-    ):  # Дописать, что возвращает функция
-        async with async_session_maker() as session:
-            query = update(User).where(User.id == user_id).values(**kwargs)
-            await session.execute(query)
-            await session.commit()
+        values: BaseModel,
+    ):
+        values_dict = values.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        async with async_session_maker() as session: 
+            user = await session.get(User, user_id)
+            if user:
+                if phone_number := values_dict["phone_number"]:
+                    user.profile.phone_number = phone_number
+                if division := values_dict["division"]:
+                    user.profile.division = division
+                await session.commit()

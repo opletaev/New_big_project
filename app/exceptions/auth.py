@@ -11,7 +11,7 @@ class AuthException(HTTPException):
 
 class IncorrectEmailOrPassword(AuthException):
     status_code = status.HTTP_401_UNAUTHORIZED
-    detail = "Неверный email или пароль"
+    detail = "Неверный табельный номер или пароль"
 
 
 class TokenExpiredException(AuthException):
@@ -31,3 +31,4 @@ class IncorrectTokenFormatException(AuthException):
 
 class TokenIsNotPresentException(AuthException):
     status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Пользователь не аутентифицирован"

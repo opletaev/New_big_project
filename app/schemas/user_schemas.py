@@ -92,25 +92,35 @@ class SCreateUser(BaseModel):
         return value.title()
 
 
-class SDeleteUserResponse(BaseModel):
-    deleted_user_id: UUID
-
-
 class SUpdatedUserResponse(BaseModel):
     updated_user_id: UUID
 
 
-class SUpdateUserRequest(BaseModel):
-    password: str = Field(
-        title="Пароль",
-        min_length=8,
-        examples=["Super-Secret-Password"],
-    )
-    phone_number: str = Field(
+class SUpdateUserProfileRequest(BaseModel):
+    phone_number: str | None = Field(
         title="Рабочий телефон",
         min_length=5,
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
         examples=["8(800)555-35-35", "04-51"],
+        default=None,
     )
-    division: DivisionEnum
+    division: DivisionEnum | None = Field(
+        default=None,
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SUpdateUserPasswordRequest(BaseModel):
+    password: str | None = Field(
+        title="Пароль",
+        min_length=8,
+        examples=["Super-Secret-Password"],
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SDeleteUserResponse(BaseModel):
+    deleted_user_id: UUID

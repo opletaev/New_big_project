@@ -5,7 +5,8 @@ from app.dependencies.user import get_user_service
 from app.schemas.user_schemas import (
     SCreateUser,
     SShowUser,
-    SUpdateUserRequest,
+    SUpdateUserPasswordRequest,
+    SUpdateUserProfileRequest,
 )
 from app.service.auth_service import AuthService
 from app.service.user_service import UserService
@@ -63,11 +64,21 @@ async def get_all_users(
 #     pass
 
 
-@router.patch("/update")  # Токен работает, обновление - нет.
-async def update_user(
-    body: SUpdateUserRequest,
-    user_id: UUID = Depends(AuthService.verify_token),
+@router.patch("/update_profile")
+async def update_user_profile(
+    body: SUpdateUserProfileRequest,
+    user_id=Depends(AuthService.verify_token),
     service: UserService = Depends(get_user_service),
 ):
-    user = await UserUsecase(service).update_user(body, user_id)
+    user = await UserUsecase(service).update_user_profile(user_id, body)
+    return user
+
+
+@router.patch("/update_password")
+async def update_user_password(
+    password: SUpdateUserPasswordRequest,
+    user_id=Depends(AuthService.verify_token),
+    service: UserService = Depends(get_user_service),
+):
+    user = await UserUsecase(service).update_user_password(user_id, password)
     return user

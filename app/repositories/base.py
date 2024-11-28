@@ -2,29 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 
 from app.core.database import Base, async_session_maker
 
 T = TypeVar("T", bound=Base)
-
-
-class AbstractRepository(Generic[T], ABC):
-    @abstractmethod
-    async def get(self, id: int) -> T: ...
-
-    @abstractmethod
-    async def add(self, id: int) -> T: ...
-
-    # @abstractmethod
-    # async def delete(self, id: int): #-> bool:
-    #     ...
-
-    # @abstractmethod
-    # async def update(self, id: int): #-> T:
-    #     ...
 
 
 class BaseRepository(Generic[T]):
@@ -89,12 +73,31 @@ class BaseRepository(Generic[T]):
             return records
 
     @classmethod
-    async def find_all_by_filter(cls, filter: dict[str, Any]) -> list[T]:
+    async def find_all_by_filter(cls, filter: BaseModel) -> list[T]:
+        filter_dict = filter.model_dump(exclude_unset=True)
+
         async with async_session_maker() as session:
-            query = select(cls.model).filter_by(**filter)
+            query = select(cls.model).filter_by(**filter_dict)
             result = await session.execute(query)
             result = result.scalars().all()
             return result
+
+    @classmethod
+    async def update_instance(
+        cls,
+        instance_id: UUID,
+        values: BaseModel,
+    ):  # Дописать, что возвращает функция
+        values_dict = values.model_dump(exclude_none=True)
+
+        async with async_session_maker() as session:
+            query = (
+                update(cls.model)
+                .where(cls.model.id == instance_id)
+                .values(**values_dict)
+            )
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def delete_by_id(cls, instance_id: UUID | int) -> None:

@@ -1,5 +1,6 @@
 from app.repositories.user import UserRepository
 from app.schemas.user_schemas import SCreateUser
+from app.service.auth_service import AuthService
 from app.service.user_service import UserService
 
 
@@ -24,7 +25,13 @@ class DebugUserService:
     ):
         for user_data in users_data:
             user_data = SCreateUser(**user_data)
-            await UserService(UserRepository()).create_user_with_profile(body=user_data)
+            hashed_password = AuthService(UserService).hashed_password(
+                user_data.password
+            )  # Создать DebugUsecase и вынести туда
+            await UserService(UserRepository()).create_user_with_profile(
+                body=user_data,
+                hashed_password=hashed_password,
+            )
 
         return await UserService(UserRepository()).get_all_users()
 
