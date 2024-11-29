@@ -1,4 +1,5 @@
 import re
+from typing import Annotated, Optional
 from uuid import UUID
 
 from pydantic import (
@@ -15,79 +16,61 @@ LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 PHONE_MATCH_PATTERN = re.compile(r"^[0-9()+\-]+$")
 
 
-class SUser(BaseModel):
+class SUserAuthData(BaseModel):
     factory_employee_id: int
     hashed_password: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class SUserProfile(BaseModel):
-    user_id: UUID  # Для отладки. Потом убрать
-    surname: str
-    name: str
-    patronymic: str
-    division: DivisionEnum
-    phone_number: str
-    is_active: bool
-    role: UserRoleEnun = Field(default="Пользователь")
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class SShowUser(BaseModel):
-    factory_employee_id: int
-    hashed_password: str  # Для отладки. Потом убрать
-    profile: SUserProfile
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class SCreateUser(BaseModel):
-    factory_employee_id: int = Field(
+    factory_employee_id: Annotated[int, Field(
         title="Табельный номер",
         examples=["12345"],
-    )
-    password: str = Field(
+    )]
+    password: Annotated[str, Field(
         title="Пароль",
         min_length=8,
         examples=["Super-Secret-Password"],
-    )
-    
-    
-class SCreateProfile(BaseModel):
-    surname: str = Field(
+    )]
+
+
+class SUserData(BaseModel):
+    surname: Annotated[str, Field(
         title="Фамилия",
         min_length=2,
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
         examples=["Пупкин"],
-    )
-    name: str = Field(
+    )]
+    name: Annotated[str, Field(
         title="Имя",
         min_length=3,
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
         examples=["Васян"],
-    )
-    patronymic: str = Field(
+    )]
+    patronymic: Annotated[str, Field(
         title="Отчество",
         min_length=5,
         max_length=25,
         pattern=LETTER_MATCH_PATTERN,
         examples=["Инакентич"],
-    )
+    )]
     division: DivisionEnum
-    phone_number: str = Field(
+    phone_number: Annotated[str, Field(
         title="Рабочий телефон",
         min_length=5,
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
         examples=["8(800)555-35-35", "04-51"],
-    )
-    role: UserRoleEnun = Field(
+    )]
+    is_active: Annotated[bool, Field(
+        default=True,
+    )]
+    role: Annotated[UserRoleEnun, Field(
         default="Пользователь",
-    )
+    )]
 
     @field_validator("name", "surname", "patronymic")
     @classmethod
@@ -95,32 +78,40 @@ class SCreateProfile(BaseModel):
         return value.title()
 
 
+class SAllUserData(BaseModel):
+    factory_employee_id: int
+    hashed_password: str
+    profile: SUserData
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class SUpdatedUserResponse(BaseModel):
     updated_user_id: UUID
 
 
 class SUpdateUserProfileRequest(BaseModel):
-    phone_number: str | None = Field(
+    phone_number: Annotated[Optional[str], Field(
         title="Рабочий телефон",
         min_length=5,
         max_length=16,
         pattern=PHONE_MATCH_PATTERN,
         examples=["8(800)555-35-35", "04-51"],
         default=None,
-    )
-    division: DivisionEnum | None = Field(
+    )]
+    division: Annotated[Optional[DivisionEnum], Field(
         default=None,
-    )
+    )]
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class SUpdateUserPasswordRequest(BaseModel):
-    password: str | None = Field(
+    password: Annotated[Optional[str], Field(
         title="Пароль",
         min_length=8,
         examples=["Super-Secret-Password"],
-    )
+    )]
 
     model_config = ConfigDict(from_attributes=True)
 

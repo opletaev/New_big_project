@@ -4,12 +4,11 @@ from uuid import UUID
 from app.exceptions.user import UserAlreadyExistsException
 from app.models.user import User
 from app.schemas.user_schemas import (
-    SCreateProfile,
+    SAllUserData,
     SCreateUser,
-    SShowUser,
     SUpdateUserPasswordRequest,
     SUpdateUserProfileRequest,
-    SUser,
+    SUserData,
 )
 from app.service.auth_service import AuthService, UserService
 from app.service.profile_service import ProfileService
@@ -29,18 +28,16 @@ class UserUsecase:
     async def create_user_and_profile(
         self,
         user: SCreateUser,
-        user_data: SCreateProfile,
-    ) -> Optional[SShowUser]:
+        user_data: SUserData,
+    ) -> Optional[SAllUserData]:
         if await self.user_service.get_user_info_by_factory_employee_id(
             user.factory_employee_id
         ):
             raise UserAlreadyExistsException
         hashed_password = self.auth_service.hashed_password(user.password)
-        user = SUser.model_construct(
-            factory_employee_id=user.factory_employee_id,
-            hashed_password=hashed_password,
+        user = await self.user_service.create_user(
+            user.factory_employee_id, hashed_password
         )
-        user = await self.user_service.create_user(user)
         await self.profile_service.create_profile(user.id, user_data)
         user = await self.user_service.get_user_info_by_id(
             user.id
@@ -59,12 +56,12 @@ class UserUsecase:
     async def get_user_info_by_factory_employee_id(
         self,
         factory_employee_id: int,
-    ) -> Optional[SShowUser]:
+    ) -> Optional[SAllUserData]:
         return await self.user_service.get_user_info_by_factory_employee_id(
             factory_employee_id
         )
 
-    async def get_all_users(self) -> Optional[list[SShowUser]]:
+    async def get_all_users(self) -> Optional[list[SAllUserData]]:
         return await self.user_service.get_all_users()
 
     async def update_user_profile(

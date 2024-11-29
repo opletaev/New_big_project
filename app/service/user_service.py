@@ -4,26 +4,27 @@ from uuid import UUID
 from pydantic import create_model
 
 from app.models.user import User
-from app.schemas.user_schemas import SShowUser, SUser
+from app.schemas.user_schemas import SAllUserData, SUserAuthData
 from app.repositories.user import UserRepository
 
 
 class UserService:
-    def __init__(self, repository: UserRepository) -> None:
-        self.repository = repository
+    def __init__(self, user_repository: UserRepository) -> None:
+        self.repository = user_repository
 
     async def create_user(
         self,
-        user: SUser,
+        factory_employee_id: int,
+        hashed_password: str,
     ) -> UUID:
-        # user = SUser(
-        #     factory_employee_id=user.factory_employee_id,
-        #     hashed_password=user.hashed_password,
-        # )
+        user = SUserAuthData(
+            factory_employee_id=factory_employee_id,
+            hashed_password=hashed_password,
+        )
         user_id = await self.repository.add(user)
         return user_id
 
-    async def get_all_users(self) -> Optional[list[SShowUser]]:
+    async def get_all_users(self) -> Optional[list[SAllUserData]]:
         users = await self.repository.find_all()
         return users
 
@@ -51,7 +52,7 @@ class UserService:
         self,
         user_id: UUID,
     ) -> None:
-        await self.repository.delete_by_id(instance_id=user_id)
+        await self.repository.delete_by_id(user_id)
 
     async def update_user_password(
         self,

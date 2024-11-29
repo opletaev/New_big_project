@@ -15,10 +15,10 @@ class BaseRepository(Generic[T]):
 
     @classmethod
     async def add(cls, values: BaseModel) -> T:
-        value_dict = values.model_dump(exclude_unset=True)
-        print(f"Добавление записи {cls.model.__name__} с параметрами: {value_dict}")
+        values_dict = values.model_dump(exclude_unset=True)
+        print(f"Добавление записи {cls.model.__name__} с параметрами: {values_dict}")
         async with async_session_maker() as session:
-            new_instance = cls.model(**value_dict)  # type: ignore
+            new_instance = cls.model(**values_dict)  # type: ignore
             session.add(new_instance)
             try:
                 await session.commit()
@@ -30,7 +30,7 @@ class BaseRepository(Generic[T]):
             return new_instance
 
     @classmethod
-    async def add_all(cls, values: list[BaseModel]) -> list[T]:
+    async def add_many(cls, values: list[BaseModel]) -> list[T]:
         values_list = [value.model_dump(exclude_unset=True) for value in values]
         print(
             f"Добавление нескольких записей {cls.model.__name__} с параметрами: {values_list}"
@@ -74,37 +74,37 @@ class BaseRepository(Generic[T]):
 
     @classmethod
     async def find_one_or_none_by_filter(cls, filters: BaseModel) -> T | None:
-        filter_dict = filters.model_dump(exclude_unset=True)
-        print(f"Поиск одной записи {cls.model.__name__} по фильтрам: {filter_dict}")
+        filters_dict = filters.model_dump(exclude_unset=True)
+        print(f"Поиск одной записи {cls.model.__name__} по фильтрам: {filters_dict}")
         async with async_session_maker() as session:
             try:
-                query = select(cls.model).filter_by(**filter_dict)
+                query = select(cls.model).filter_by(**filters_dict)
                 result = await session.execute(query)
                 record = result.scalar_one_or_none()
                 if record:
-                    print(f"Запись найдена по фильтрам: {filter_dict}")
+                    print(f"Запись найдена по фильтрам: {filters_dict}")
                 else:
-                    print(f"Запись не найдена по фильтрам: {filter_dict}")
+                    print(f"Запись не найдена по фильтрам: {filters_dict}")
                 return record
             except SQLAlchemyError as e:
                 print(
-                    f"Ошибка при поиске записи {cls.model.__name__} по фильтрам: {filter_dict}"
+                    f"Ошибка при поиске записи {cls.model.__name__} по фильтрам: {filters_dict}"
                 )
                 raise e
 
     @classmethod
     async def find_all_by_filter(cls, filters: BaseModel) -> list[T]:
-        filter_dict = filters.model_dump(exclude_unset=True)
-        print(f"Поиск всех записей {cls.model.__name__} по фильтрам: {filter_dict}")
+        filters_dict = filters.model_dump(exclude_unset=True)
+        print(f"Поиск всех записей {cls.model.__name__} по фильтрам: {filters_dict}")
         async with async_session_maker() as session:
             try:
-                query = select(cls.model).filter_by(**filter_dict)
+                query = select(cls.model).filter_by(**filters_dict)
                 result = await session.execute(query)
                 records = result.scalars().all()
                 print(f"Найдено {len(records)} записей")
                 return result
             except SQLAlchemyError as e:
-                print(f"Ошибка при поиске всех записей по фильтрам: {filter_dict}")
+                print(f"Ошибка при поиске всех записей по фильтрам: {filters_dict}")
                 raise e
 
     @classmethod
@@ -141,7 +141,7 @@ class BaseRepository(Generic[T]):
                 )
                 await session.execute(query)
                 await session.commit()
-                print("Запись {cls.model.__name__} с ID: {instance_id} - Обновлена")
+                print(f"Запись {cls.model.__name__} с ID: {instance_id} - Обновлена")
             except SQLAlchemyError as e:
                 print(f"Ошибка при обновлении записи: {e}")
                 # await session.rollback()

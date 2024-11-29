@@ -3,6 +3,7 @@ from enum import StrEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base, annotated_not_nullable_str
+from app.entities.user import User
 from app.models.user import DivisionEnum
 
 
@@ -19,11 +20,12 @@ class PDB_Storage(Base):
         default=DivisionEnum.PDB, server_default=DivisionEnum.PDB.name
     )
     phone_number: Mapped[annotated_not_nullable_str]
-    items: Mapped[list["Cable"]] = relationship(
+    cables_list: Mapped[list["Cable"]] = relationship(
         "Cable",
         back_populates="storage",
         cascade="all, delete-orphan",
     )
+    pdb_workers: Mapped[list["User"]]
     # employees
 
 
@@ -39,5 +41,6 @@ class Cable(Base):
     status: Mapped[CableStatusEnum] = mapped_column(nullable=False)
     storage: Mapped["PDB_Storage"] = relationship(
         "PDB_Storage",
-        back_populates="items",
+        back_populates="cables_list",
     )
+    

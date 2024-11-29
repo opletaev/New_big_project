@@ -1,10 +1,11 @@
+from typing import Annotated
 from pydantic import BaseModel, Field
 
 
-class SAuthUser(BaseModel):
-    factory_employee_id: int = Field(
+class SAuth(BaseModel):
+    factory_employee_id: Annotated[int, Field(
         title="Табельный номер",
-    )
+    )]
     password: str
 
 

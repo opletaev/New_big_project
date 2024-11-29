@@ -1,16 +1,16 @@
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.auth import get_auth_service
 from app.dependencies.user import get_profile_service, get_user_service
-from app.models.user import User
 from app.schemas.user_schemas import (
-    SCreateProfile,
+    SAllUserData,
     SCreateUser,
-    SShowUser,
     SUpdateUserPasswordRequest,
     SUpdateUserProfileRequest,
+    SUserData,
 )
 from app.service.auth_service import AuthService
 from app.service.profile_service import ProfileService
@@ -24,7 +24,9 @@ router = APIRouter(
 )
 
 
-@router.delete("/delete")  # ДЛЯ ОТЛАДКИ - доступно без токена
+@router.delete(
+    "/delete", name="Удалить пользователя"
+)  # ДЛЯ ОТЛАДКИ - доступно без токена
 ##### Если осталять, то сделать проверку пользователя отсутвие полученных кабелей #####
 async def delete_user(
     user_id: UUID,
@@ -40,14 +42,14 @@ async def delete_user(
     ).delete_user(user_id)
 
 
-@router.post("/register")  # Добавить проеврку отсутствия токена
+@router.post("/register", name="Регистрация")  # Добавить проеврку отсутствия токена
 async def create_user_and_profile(
     user: SCreateUser,
-    user_data: SCreateProfile,
+    user_data: SUserData,
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> SShowUser:
+) -> SAllUserData:
     user = await UserUsecase(
         auth_service,
         user_service,
@@ -56,7 +58,7 @@ async def create_user_and_profile(
     return user
 
 
-@router.patch("/update_profile")
+@router.patch("/update_profile", name="Изменить данные пользователя")
 async def update_user_profile(
     body: SUpdateUserProfileRequest,
     user_id: UUID = Depends(AuthService.verify_token),
@@ -72,7 +74,7 @@ async def update_user_profile(
     return user
 
 
-@router.patch("/update_password")
+@router.patch("/update_password", name="Изменить пароль")
 async def update_user_password(
     password: SUpdateUserPasswordRequest,
     user_id: UUID = Depends(AuthService.verify_token),
@@ -88,12 +90,12 @@ async def update_user_password(
     return user
 
 
-@router.get("/all")
+@router.get("/all", name="Найти всех пользователей")
 async def get_all_users(
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[list[SShowUser]]:
+) -> Optional[list[SAllUserData]]:
     users = await UserUsecase(
         auth_service,
         user_service,
@@ -102,29 +104,30 @@ async def get_all_users(
     return users
 
 
-@router.get("/{factory_employee_id}")
+@router.get("/{factory_employee_id}", name="Найти пользователя по таб.№")
 async def get_user_info_by_factory_employee_id(
     factory_employee_id: int,
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[SShowUser]:
-    # Дописать, что возвращает эта функция
+) -> Optional[SAllUserData]:
     user = await UserUsecase(
         auth_service,
         user_service,
         profile_service,
     ).get_user_info_by_factory_employee_id(factory_employee_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Страница не найдена")
     return user
 
 
-@router.get("/")
+@router.get("/", name="Найти текущего пользователя")
 async def get_current_user(
     user_id: UUID = Depends(AuthService.verify_token),
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[SShowUser]:
+) -> Optional[SAllUserData]:
     return await UserUsecase(
         auth_service,
         user_service,

@@ -41,9 +41,9 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
     async def update_profile(
         self,
         user_id: UUID,
-        values: SUpdateUserProfileRequest,
+        user_data: SUpdateUserProfileRequest,
     ) -> None:
-        values_dict = values.model_dump(
+        values_dict = user_data.model_dump(
             exclude_none=True,
             exclude_unset=True,
         )

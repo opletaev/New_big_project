@@ -3,6 +3,7 @@ from app.models.user import User
 from app.repositories.user import UserRepository
 from app.schemas.user_schemas import SCreateUser
 from app.service.auth_service import AuthService
+from app.service.profile_service import ProfileService
 from app.service.user_service import UserService
 
 
@@ -30,10 +31,10 @@ class DebugUserService:
             hashed_password = AuthService(UserService).hashed_password(
                 user_data.password
             )  # Создать DebugUsecase и вынести туда
-            await UserService(UserRepository()).create_user_with_profile(
-                body=user_data,
-                hashed_password=hashed_password,
+            user = await UserService(UserRepository()).create_user(
+                user_data.factory_employee_id, hashed_password
             )
+            await ProfileService(UserRepository()).create_profile(user.id, user_data)
 
         return await UserService(UserRepository()).get_all_users()
 

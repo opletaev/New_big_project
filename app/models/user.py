@@ -66,8 +66,6 @@ class UserProfile(Base):
     user: Mapped["User"] = relationship(
         "User", back_populates="profile", uselist=False, passive_deletes=True
     )
-
-
-# class Operation(Base):
-#     __tablename__ = "operations"
-#     pass
+    # recevied_cables: Mapped[list["Cable"]] = mapped_column(
+    #     ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True
+    # )
