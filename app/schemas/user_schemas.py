@@ -53,6 +53,9 @@ class SCreateUser(BaseModel):
         min_length=8,
         examples=["Super-Secret-Password"],
     )
+    
+    
+class SCreateProfile(BaseModel):
     surname: str = Field(
         title="Фамилия",
         min_length=2,
