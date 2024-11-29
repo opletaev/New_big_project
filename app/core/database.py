@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from sqlalchemy import TIMESTAMP, Integer, func
+from sqlalchemy import TIMESTAMP, Integer, String, func
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -20,7 +20,7 @@ engine = create_async_engine(DATABASE_URL, **DATEBASE_PARAMS, echo=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
-annotated_not_nullable_str = Annotated[str, mapped_column(nullable=False)]
+annotated_not_nullable_str = Annotated[str, mapped_column(String, nullable=False)]
 
 
 class Base(AsyncAttrs, DeclarativeBase):

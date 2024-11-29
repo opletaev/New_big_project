@@ -6,6 +6,7 @@ from app.models.user import User
 from app.schemas.user_schemas import (
     SAllUserData,
     SCreateUser,
+    SRegisterUser,
     SUpdateUserPasswordRequest,
     SUpdateUserProfileRequest,
     SUserData,
@@ -27,7 +28,7 @@ class UserUsecase:
 
     async def create_user_and_profile(
         self,
-        user: SCreateUser,
+        user: SRegisterUser,
         user_data: SUserData,
     ) -> Optional[SAllUserData]:
         if await self.user_service.get_user_info_by_factory_employee_id(
@@ -35,9 +36,11 @@ class UserUsecase:
         ):
             raise UserAlreadyExistsException
         hashed_password = self.auth_service.hashed_password(user.password)
-        user = await self.user_service.create_user(
-            user.factory_employee_id, hashed_password
+        new_user = SCreateUser(
+            hashed_password=hashed_password,
+            **user.model_dump(),
         )
+        user = await self.user_service.create_user(new_user)
         await self.profile_service.create_profile(user.id, user_data)
         user = await self.user_service.get_user_info_by_id(
             user.id

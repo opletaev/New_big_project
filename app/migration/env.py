@@ -10,8 +10,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from app.core.database import Base
-from app.models.user import User, UserProfile
-from app.models.pdb_storage import PDB_Storage, Cable
+from app.models.cable import Cable
+from app.models.profile import Profile
+from app.models.user import User
+from app.models.transaction import Transaction
 from app.core.config import settings
 
 sys.path.insert(0, dirname(dirname(dirname(abspath(__file__)))))

@@ -1,7 +1,8 @@
 from typing import Optional
 from app.models.user import User
+from app.repositories.profile import ProfileRepository
 from app.repositories.user import UserRepository
-from app.schemas.user_schemas import SCreateUser
+from app.schemas.user_schemas import SAllUserData, SCreateUser, SRegisterUser, SUserData
 from app.service.auth_service import AuthService
 from app.service.profile_service import ProfileService
 from app.service.user_service import UserService
@@ -27,14 +28,17 @@ class DebugUserService:
         users_data: list[dict] = users_data,
     ) -> Optional[list[User]]:
         for user_data in users_data:
-            user_data = SCreateUser(**user_data)
+            # new_user = SRegisterUser(**user_data)
             hashed_password = AuthService(UserService).hashed_password(
-                user_data.password
+                user_data["password"]
             )  # Создать DebugUsecase и вынести туда
-            user = await UserService(UserRepository()).create_user(
-                user_data.factory_employee_id, hashed_password
+            user = SCreateUser(
+                hashed_password=hashed_password,
+                **user_data,
             )
-            await ProfileService(UserRepository()).create_profile(user.id, user_data)
+            user = await UserService(UserRepository()).create_user(user)
+            user_data = SUserData(**user_data)
+            await ProfileService(ProfileRepository()).create_profile(user.id, user_data)
 
         return await UserService(UserRepository()).get_all_users()
 

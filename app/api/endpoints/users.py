@@ -8,6 +8,7 @@ from app.dependencies.user import get_profile_service, get_user_service
 from app.schemas.user_schemas import (
     SAllUserData,
     SCreateUser,
+    SRegisterUser,
     SUpdateUserPasswordRequest,
     SUpdateUserProfileRequest,
     SUserData,
@@ -44,7 +45,7 @@ async def delete_user(
 
 @router.post("/register", name="Регистрация")  # Добавить проеврку отсутствия токена
 async def create_user_and_profile(
-    user: SCreateUser,
+    user: SRegisterUser,
     user_data: SUserData,
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),

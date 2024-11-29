@@ -3,29 +3,28 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
-from app.models.user import User, UserProfile
+from app.models.profile import Profile
+from app.models.user import User
 from app.repositories.base import BaseRepository
-from app.schemas.user_schemas import SUpdateUserProfileRequest
+from app.schemas.user_schemas import SUpdateUserProfileRequest, SUserData
 
 
 class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
-    model = UserProfile
+    model = Profile
 
     async def create_profile(
         self,
         user_id: UUID,
-        user_data: SUpdateUserProfileRequest,
+        user_data: SUserData,
     ):
         async with async_session_maker() as session:
             try:
-                user_profile = UserProfile(
+                user_profile = Profile(
                     name=user_data.name,
                     surname=user_data.surname,
                     patronymic=user_data.patronymic,
                     division=user_data.division,
                     phone_number=user_data.phone_number,
-                    is_active=True,
-                    role=user_data.role,
                     user_id=user_id,
                 )
                 session.add(user_profile)

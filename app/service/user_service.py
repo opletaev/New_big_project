@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import create_model
 
 from app.models.user import User
-from app.schemas.user_schemas import SAllUserData, SUserAuthData
+from app.schemas.user_schemas import SAllUserData, SCreateUser
 from app.repositories.user import UserRepository
 
 
@@ -12,15 +12,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
         self.repository = user_repository
 
-    async def create_user(
-        self,
-        factory_employee_id: int,
-        hashed_password: str,
-    ) -> UUID:
-        user = SUserAuthData(
-            factory_employee_id=factory_employee_id,
-            hashed_password=hashed_password,
-        )
+    async def create_user(self, user: SCreateUser) -> UUID:
         user_id = await self.repository.add(user)
         return user_id
 
