@@ -93,7 +93,7 @@ class BaseRepository(Generic[T]):
                 raise e
 
     @classmethod
-    async def find_all_by_filter(cls, filters: BaseModel) -> list[T]:
+    async def find_all_by_filter(cls, filters: BaseModel) -> list[T] | None:
         filters_dict = filters.model_dump(exclude_unset=True)
         print(f"Поиск всех записей {cls.model.__name__} по фильтрам: {filters_dict}")
         async with async_session_maker() as session:
@@ -102,7 +102,8 @@ class BaseRepository(Generic[T]):
                 result = await session.execute(query)
                 records = result.scalars().all()
                 print(f"Найдено {len(records)} записей")
-                return result
+                print(records)
+                return records
             except SQLAlchemyError as e:
                 print(f"Ошибка при поиске всех записей по фильтрам: {filters_dict}")
                 raise e
@@ -115,6 +116,7 @@ class BaseRepository(Generic[T]):
                 query = select(cls.model)  # type: ignore
                 result = await session.execute(query)
                 records = result.scalars().all()
+                print(records)
                 print(f"Найдено {len(records)} записей")
                 return records
             except SQLAlchemyError as e:
@@ -144,7 +146,7 @@ class BaseRepository(Generic[T]):
                 print(f"Запись {cls.model.__name__} с ID: {instance_id} - Обновлена")
             except SQLAlchemyError as e:
                 print(f"Ошибка при обновлении записи: {e}")
-                # await session.rollback()
+                await session.rollback()
                 raise e
 
     @classmethod

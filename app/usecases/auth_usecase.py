@@ -2,7 +2,7 @@ from fastapi import Response
 
 from app.exceptions.auth import IncorrectEmailOrPassword
 from app.repositories.user import UserRepository
-from app.schemas.auth_schemas import SAuth
+from app.schemas.auth_schemas import AuthDTO
 from app.service.auth_service import AuthService
 from app.service.user_service import UserService
 
@@ -11,7 +11,7 @@ class AuthUsecase:
     def __init__(self, auth_service: AuthService):
         self.service = auth_service
 
-    async def login_user(self, response: Response, body: SAuth) -> str:
+    async def login_user(self, response: Response, body: AuthDTO) -> str:
         user = await UserService(  # Тут дерьмо какое-то
             UserRepository  # НАСТРОИТЬ ЗАВИСИМОСТИ
         ).get_user_info_by_factory_employee_id(body.factory_employee_id)

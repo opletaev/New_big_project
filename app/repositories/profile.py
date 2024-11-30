@@ -6,7 +6,7 @@ from app.core.database import async_session_maker
 from app.models.profile import Profile
 from app.models.user import User
 from app.repositories.base import BaseRepository
-from app.schemas.user_schemas import SUpdateUserProfileRequest, SUserData
+from app.schemas.user_schemas import UpdateUserProfileRequestDTO, UserDataDTO
 
 
 class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
@@ -15,7 +15,7 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
     async def create_profile(
         self,
         user_id: UUID,
-        user_data: SUserData,
+        user_data: UserDataDTO,
     ):
         async with async_session_maker() as session:
             try:
@@ -40,7 +40,7 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
     async def update_profile(
         self,
         user_id: UUID,
-        user_data: SUpdateUserProfileRequest,
+        user_data: UpdateUserProfileRequestDTO,
     ) -> None:
         values_dict = user_data.model_dump(
             exclude_none=True,

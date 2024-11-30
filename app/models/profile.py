@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base, annotated_not_nullable_str
+from app.core.database import Base, str_not_null
 
 
 class DivisionEnum(StrEnum):
@@ -24,21 +24,28 @@ class DivisionEnum(StrEnum):
 class Profile(Base):
     __tablename__ = "profiles"
 
-    surname: Mapped[annotated_not_nullable_str]
-    name: Mapped[annotated_not_nullable_str]
-    patronymic: Mapped[annotated_not_nullable_str]
+    surname: Mapped[str_not_null]
+    name: Mapped[str_not_null]
+    patronymic: Mapped[str_not_null]
     division: Mapped[DivisionEnum] = mapped_column(
-        Enum(DivisionEnum, name="division"),
+        Enum(
+            DivisionEnum,
+            name="division",
+        ),
         nullable=False,
     )
-    phone_number: Mapped[annotated_not_nullable_str]
+    phone_number: Mapped[str_not_null]
+
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         unique=True,
     )
+
     user: Mapped["User"] = relationship(  # type: ignore
-        "User",
         back_populates="profile",
         uselist=False,
         passive_deletes=True,

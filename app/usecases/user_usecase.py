@@ -4,12 +4,12 @@ from uuid import UUID
 from app.exceptions.user import UserAlreadyExistsException
 from app.models.user import User
 from app.schemas.user_schemas import (
-    SAllUserData,
-    SCreateUser,
-    SRegisterUser,
-    SUpdateUserPasswordRequest,
-    SUpdateUserProfileRequest,
-    SUserData,
+    AllUserDataDTO,
+    CreateUserDTO,
+    RegisterUserDTO,
+    UpdateUserPasswordRequestDTO,
+    UpdateUserProfileRequestDTO,
+    UserDataDTO,
 )
 from app.service.auth_service import AuthService, UserService
 from app.service.profile_service import ProfileService
@@ -28,15 +28,15 @@ class UserUsecase:
 
     async def create_user_and_profile(
         self,
-        user: SRegisterUser,
-        user_data: SUserData,
-    ) -> Optional[SAllUserData]:
+        user: RegisterUserDTO,
+        user_data: UserDataDTO,
+    ) -> Optional[AllUserDataDTO]:
         if await self.user_service.get_user_info_by_factory_employee_id(
             user.factory_employee_id
         ):
             raise UserAlreadyExistsException
         hashed_password = self.auth_service.hashed_password(user.password)
-        new_user = SCreateUser(
+        new_user = CreateUserDTO(
             hashed_password=hashed_password,
             **user.model_dump(),
         )
@@ -59,18 +59,18 @@ class UserUsecase:
     async def get_user_info_by_factory_employee_id(
         self,
         factory_employee_id: int,
-    ) -> Optional[SAllUserData]:
+    ) -> Optional[AllUserDataDTO]:
         return await self.user_service.get_user_info_by_factory_employee_id(
             factory_employee_id
         )
 
-    async def get_all_users(self) -> Optional[list[SAllUserData]]:
+    async def get_all_users(self) -> Optional[list[AllUserDataDTO]]:
         return await self.user_service.get_all_users()
 
     async def update_user_profile(
         self,
         user_id: UUID,
-        new_data: SUpdateUserProfileRequest,
+        new_data: UpdateUserProfileRequestDTO,
     ) -> Optional[User]:  # Для отладки. Потом None, наверно
         await self.profile_service.update_profile(user_id, new_data)
         return await self.user_service.get_user_info_by_id(user_id)
@@ -78,7 +78,7 @@ class UserUsecase:
     async def update_user_password(
         self,
         user_id: UUID,
-        password: SUpdateUserPasswordRequest,
+        password: UpdateUserPasswordRequestDTO,
     ) -> None:
         hashed_password = self.auth_service.hashed_password(password.password)
         await self.user_service.update_user_password(user_id, hashed_password)

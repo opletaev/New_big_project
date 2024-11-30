@@ -17,7 +17,7 @@ LETTER_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 PHONE_MATCH_PATTERN = re.compile(r"^[0-9()+\-]+$")
 
 
-class SUser(BaseModel):
+class UserDTO(BaseModel):
     factory_employee_id: Annotated[
         int,
         Field(
@@ -41,7 +41,7 @@ class SUser(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class SRegisterUser(SUser):
+class RegisterUserDTO(UserDTO):
     password: Annotated[
         str,
         Field(
@@ -52,11 +52,11 @@ class SRegisterUser(SUser):
     ]
 
 
-class SCreateUser(SUser):
+class CreateUserDTO(UserDTO):
     hashed_password: str
 
 
-class SUserData(BaseModel):
+class UserDataDTO(BaseModel):
     surname: Annotated[
         str,
         Field(
@@ -105,17 +105,17 @@ class SUserData(BaseModel):
         return value.title()
 
 
-class SAllUserData(SCreateUser):
-    profile: SUserData
+class AllUserDataDTO(CreateUserDTO):
+    profile: UserDataDTO
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class SUpdatedUserResponse(BaseModel):
+class UpdatedUserResponseDTO(BaseModel):
     updated_user_id: UUID
 
 
-class SUpdateUserProfileRequest(BaseModel):
+class UpdateUserProfileRequestDTO(BaseModel):
     phone_number: Annotated[
         Optional[str],
         Field(
@@ -137,7 +137,7 @@ class SUpdateUserProfileRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class SUpdateUserPasswordRequest(BaseModel):
+class UpdateUserPasswordRequestDTO(BaseModel):
     password: Annotated[
         Optional[str],
         Field(
@@ -150,5 +150,5 @@ class SUpdateUserPasswordRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class SDeleteUserResponse(BaseModel):
+class DeleteUserResponseDTO(BaseModel):
     deleted_user_id: UUID

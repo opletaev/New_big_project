@@ -6,12 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies.auth import get_auth_service
 from app.dependencies.user import get_profile_service, get_user_service
 from app.schemas.user_schemas import (
-    SAllUserData,
-    SCreateUser,
-    SRegisterUser,
-    SUpdateUserPasswordRequest,
-    SUpdateUserProfileRequest,
-    SUserData,
+    AllUserDataDTO,
+    RegisterUserDTO,
+    UpdateUserPasswordRequestDTO,
+    UpdateUserProfileRequestDTO,
+    UserDataDTO,
 )
 from app.service.auth_service import AuthService
 from app.service.profile_service import ProfileService
@@ -45,12 +44,12 @@ async def delete_user(
 
 @router.post("/register", name="Регистрация")  # Добавить проеврку отсутствия токена
 async def create_user_and_profile(
-    user: SRegisterUser,
-    user_data: SUserData,
+    user: RegisterUserDTO,
+    user_data: UserDataDTO,
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> SAllUserData:
+) -> AllUserDataDTO:
     user = await UserUsecase(
         auth_service,
         user_service,
@@ -61,7 +60,7 @@ async def create_user_and_profile(
 
 @router.patch("/update_profile", name="Изменить данные пользователя")
 async def update_user_profile(
-    body: SUpdateUserProfileRequest,
+    body: UpdateUserProfileRequestDTO,
     user_id: UUID = Depends(AuthService.verify_token),
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
@@ -77,7 +76,7 @@ async def update_user_profile(
 
 @router.patch("/update_password", name="Изменить пароль")
 async def update_user_password(
-    password: SUpdateUserPasswordRequest,
+    password: UpdateUserPasswordRequestDTO,
     user_id: UUID = Depends(AuthService.verify_token),
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
@@ -96,7 +95,7 @@ async def get_all_users(
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[list[SAllUserData]]:
+) -> Optional[list[AllUserDataDTO]]:
     users = await UserUsecase(
         auth_service,
         user_service,
@@ -111,7 +110,7 @@ async def get_user_info_by_factory_employee_id(
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[SAllUserData]:
+) -> Optional[AllUserDataDTO]:
     user = await UserUsecase(
         auth_service,
         user_service,
@@ -128,7 +127,7 @@ async def get_current_user(
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
     profile_service: ProfileService = Depends(get_profile_service),
-) -> Optional[SAllUserData]:
+) -> Optional[AllUserDataDTO]:
     return await UserUsecase(
         auth_service,
         user_service,
