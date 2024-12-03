@@ -1,8 +1,12 @@
-from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter
 
-from app.schemas.cable_schemas import AddCableDTO, CableDTO, FindCableDTO
+from app.schemas.cable_schemas import (
+    AddCableDTO,
+    CableDTO,
+    FindCableDTO,
+    UpdateCableDTO,
+)
 from app.usecases.cable_usecase import CableUsecase
 
 
@@ -12,24 +16,35 @@ router = APIRouter(
 )
 
 
-@router.post("/add")
-async def add_cable(cable: AddCableDTO):
+@router.post("/add", name="Добавить кабель")
+async def add_cable(cable: AddCableDTO) -> UUID:
     cable = await CableUsecase.add_cable(cable)
     return cable
 
 
-@router.post("/search")
-async def find_cables(cables: FindCableDTO) -> list[CableDTO]:
-    cables = await CableUsecase.find_cables(cables)
+@router.patch("/update", name="Обновить сроки поверки")
+async def update_service_dates(cable_id: UUID, service_dates: UpdateCableDTO) -> None:
+    await CableUsecase.update_cable_info(cable_id, service_dates)
+
+
+@router.post("/search", name="Поиск кабелей")
+async def find_cables(filter: FindCableDTO) -> list[CableDTO]:
+    cables = await CableUsecase.find_cables_by_filter(filter)
     return cables
 
 
-@router.get("/all")
+@router.get("/all", name="Вывести все кабели")
 async def find_all_cables() -> list[CableDTO]:
     cables = await CableUsecase.find_all_cables()
     return cables
 
 
-@router.delete("/delete")
+@router.get("/service_this_month", name="Кабели на поверку")
+async def to_service_in_this_month():
+    cables = await CableUsecase.to_service_in_this_month()
+    return cables
+
+
+@router.delete("/delete", name="Удалить кабель")
 async def delete_cable(cable_id: UUID):
     await CableUsecase.delete_cable(cable_id)

@@ -5,19 +5,20 @@ from app.schemas.user_schemas import UpdateUserProfileRequestDTO, UserDataDTO
 
 
 class ProfileService:
-    def __init__(self, profile_repository: ProfileRepository) -> None:
-        self.repository = profile_repository
+    __profile_repository = ProfileRepository()
 
+    @classmethod
     async def create_profile(
         self,
         user_id: UUID,
         user_data: UserDataDTO,
-    ):
-        await self.repository.create_profile(user_id, user_data)
+    ) -> None:
+        await self.__profile_repository.create_profile(user_id, user_data)
 
+    @classmethod
     async def update_profile(
         self,
         user_id: UUID,
         user_data: UpdateUserProfileRequestDTO,
     ) -> None:
-        await self.repository.update_profile(user_id, user_data)
+        await self.__profile_repository.update_profile(user_id, user_data)

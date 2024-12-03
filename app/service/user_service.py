@@ -1,51 +1,54 @@
-from typing import Optional
 from uuid import UUID
 
 from pydantic import create_model
 
 from app.models.user import User
-from app.schemas.user_schemas import AllUserDataDTO, CreateUserDTO
+from app.schemas.user_schemas import CreateUserDTO
 from app.repositories.user import UserRepository
 
 
 class UserService:
-    def __init__(self, user_repository: UserRepository) -> None:
-        self.repository = user_repository
+    __user_repository = UserRepository()
 
-    async def create_user(self, user: CreateUserDTO) -> UUID:
-        user_id = await self.repository.add(user)
-        return user_id
+    @classmethod
+    async def create_user(self, user: CreateUserDTO) -> bool:
+        return await self.__user_repository.add(user)
 
-    async def get_all_users(self) -> Optional[list[AllUserDataDTO]]:
-        users = await self.repository.find_all()
+    @classmethod
+    async def get_all_users(self) -> list[User] | None:
+        users = await self.__user_repository.find_all()
         return users
 
+    @classmethod
     async def get_user_info_by_id(
         self,
         user_id: UUID,
-    ) -> Optional[User]:
-        user = await self.repository.find_one_or_none_by_id(user_id)
+    ) -> User | None:
+        user = await self.__user_repository.find_one_or_none_by_id(user_id)
         return user
 
+    @classmethod
     async def get_user_info_by_factory_employee_id(
         self,
         factory_employee_id: int,
-    ) -> Optional[User]:
+    ) -> User | None:
         FilterModel = create_model(
             "FilterModel",
             factory_employee_id=(int, ...),
         )
-        user_info = await self.repository.find_one_or_none_by_filter(
+        user_info = await self.__user_repository.find_one_or_none_by_filter(
             FilterModel(factory_employee_id=factory_employee_id),
         )
         return user_info
 
+    @classmethod
     async def delete_user(
         self,
         user_id: UUID,
     ) -> None:
-        await self.repository.delete_by_id(user_id)
+        await self.__user_repository.delete_by_id(user_id)
 
+    @classmethod
     async def update_user_password(
         self,
         user_id: UUID,
@@ -55,7 +58,7 @@ class UserService:
             "FilterModel",
             hashed_password=(str, ...),
         )
-        await self.repository.update_instance(
+        await self.__user_repository.update_instance(
             user_id,
             FilterModel(hashed_password=hashed_password),
         )

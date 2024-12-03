@@ -42,6 +42,7 @@ class Cable(Base):
     issued_to: Mapped[list["User"]] = relationship(  # type: ignore
         back_populates="received_cables",
         secondary=Transaction.__tablename__,
+        lazy="joined",
     )
 
     repr_columns_num = 5

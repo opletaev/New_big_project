@@ -33,8 +33,8 @@ class Base(AsyncAttrs, DeclarativeBase):
         onupdate=func.now(),
     )
 
-    repr_columns_num = 3
-    repr_columns = tuple()
+    repr_columns_num: int = 3
+    repr_columns: tuple[str] = tuple()
 
     def __repr__(self):
         columns = [

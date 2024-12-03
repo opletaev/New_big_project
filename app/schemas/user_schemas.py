@@ -6,6 +6,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    computed_field,
     field_validator,
 )
 
@@ -64,7 +65,8 @@ class UserDataDTO(BaseModel):
             min_length=2,
             max_length=25,
             pattern=LETTER_MATCH_PATTERN,
-            examples=["Пупкин"],
+            examples=["Васильев"],
+            exclude=True,
         ),
     ]
     name: Annotated[
@@ -75,6 +77,7 @@ class UserDataDTO(BaseModel):
             max_length=25,
             pattern=LETTER_MATCH_PATTERN,
             examples=["Васян"],
+            exclude=True,
         ),
     ]
     patronymic: Annotated[
@@ -84,7 +87,8 @@ class UserDataDTO(BaseModel):
             min_length=5,
             max_length=25,
             pattern=LETTER_MATCH_PATTERN,
-            examples=["Инакентич"],
+            examples=["Васяныч"],
+            exclude=True,
         ),
     ]
     division: DivisionEnum
@@ -104,9 +108,26 @@ class UserDataDTO(BaseModel):
     def titled_field(cls, value) -> str:
         return value.title()
 
+    @computed_field(title="Имя пользователя")
+    def full_name(self) -> str:
+        return f"{self.surname} {self.name} {self.patronymic}"
+
+
+class ReceivedCablesDTO(BaseModel):
+    index: str = Field(exclude=True)
+    group: str = Field(exclude=True)
+    assembly: str = Field(exclude=True)
+    factory_number: str = Field(exclude=True)
+
+    @computed_field(title="Полная маркировка")
+    def cable_name(self) -> str:
+        return f"{self.index}.{self.group}.{self.assembly} {self.factory_number}"
+
 
 class AllUserDataDTO(CreateUserDTO):
-    profile: UserDataDTO
+    id: UUID
+    profile: UserDataDTO | None
+    received_cables: list[ReceivedCablesDTO]
 
     model_config = ConfigDict(from_attributes=True)
 

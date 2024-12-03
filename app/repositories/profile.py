@@ -16,7 +16,7 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
         self,
         user_id: UUID,
         user_data: UserDataDTO,
-    ):
+    ) -> bool:
         async with async_session_maker() as session:
             try:
                 user_profile = Profile(
@@ -36,12 +36,13 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                     f"Ошибка при добавлении запиcи {user_profile.__class__.__name__} c параметрами ..."
                 )
                 raise e
+            return True
 
     async def update_profile(
         self,
         user_id: UUID,
         user_data: UpdateUserProfileRequestDTO,
-    ) -> None:
+    ) -> bool:
         values_dict = user_data.model_dump(
             exclude_none=True,
             exclude_unset=True,
@@ -63,3 +64,4 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                     f"Ошибка при обновлении запиcи {user.profile.__class__} c ID: {user.profile.id} c параметрами {values_dict}"
                 )
                 raise e
+            return True

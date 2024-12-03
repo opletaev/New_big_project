@@ -58,19 +58,19 @@ class BaseRepository(Generic[T]):
             try:
                 query = select(cls.model).where(cls.model.id == instance_id)
                 result = await session.execute(query)
-                record = result.scalar_one_or_none()
+                record = result.unique().scalar_one_or_none()
                 if record:
                     print(f"Запись {cls.model.__name__} c ID: {instance_id} - Найдена")
                 else:
                     print(
                         f"Запись {cls.model.__name__} c ID: {instance_id} - Не найдена"
                     )
-                return record
             except SQLAlchemyError as e:
                 print(
                     f"Ошибка при поиске записи {cls.model.__name__} c ID: {instance_id}"
                 )
                 raise e
+            return record
 
     @classmethod
     async def find_one_or_none_by_filter(cls, filters: BaseModel) -> T | None:
@@ -80,17 +80,17 @@ class BaseRepository(Generic[T]):
             try:
                 query = select(cls.model).filter_by(**filters_dict)
                 result = await session.execute(query)
-                record = result.scalar_one_or_none()
+                record = result.unique().scalar_one_or_none()
                 if record:
                     print(f"Запись найдена по фильтрам: {filters_dict}")
                 else:
                     print(f"Запись не найдена по фильтрам: {filters_dict}")
-                return record
             except SQLAlchemyError as e:
                 print(
                     f"Ошибка при поиске записи {cls.model.__name__} по фильтрам: {filters_dict}"
                 )
                 raise e
+            return record
 
     @classmethod
     async def find_all_by_filter(cls, filters: BaseModel) -> list[T] | None:
@@ -103,10 +103,10 @@ class BaseRepository(Generic[T]):
                 records = result.scalars().all()
                 print(f"Найдено {len(records)} записей")
                 print(records)
-                return records
             except SQLAlchemyError as e:
                 print(f"Ошибка при поиске всех записей по фильтрам: {filters_dict}")
                 raise e
+            return records
 
     @classmethod
     async def find_all(cls) -> list[T] | None:
@@ -115,20 +115,20 @@ class BaseRepository(Generic[T]):
             try:
                 query = select(cls.model)  # type: ignore
                 result = await session.execute(query)
-                records = result.scalars().all()
+                records = result.unique().scalars().all()
                 print(records)
                 print(f"Найдено {len(records)} записей")
-                return records
             except SQLAlchemyError as e:
                 print(f"Ошибка при поиске всех записей {cls.model.__name__}")
                 raise e
+            return records
 
     @classmethod
     async def update_instance(
         cls,
         instance_id: UUID,
         values: BaseModel,
-    ) -> None:
+    ) -> bool:
         values_dict = values.model_dump(exclude_none=True)
         print(
             f"""Обновление записи {cls.model.__name__} с ID: {instance_id}
@@ -148,9 +148,10 @@ class BaseRepository(Generic[T]):
                 print(f"Ошибка при обновлении записи: {e}")
                 await session.rollback()
                 raise e
+            return True
 
     @classmethod
-    async def delete_by_id(cls, instance_id: UUID | int) -> None:
+    async def delete_by_id(cls, instance_id: UUID | int) -> bool:
         print(f"Удаление записей {cls.model.__name__} по ID: {instance_id}")
         if not instance_id:
             print(f"Не указан ID записи для удаления")
@@ -167,9 +168,10 @@ class BaseRepository(Generic[T]):
                     f"Ошибка при удалении записи {cls.model.__name__} с ID: {instance_id}"
                 )
                 raise e
+            return True
 
     @classmethod
-    async def delete_all(cls) -> None:
+    async def delete_all(cls) -> bool:
         print(f"Удаление всех записей {cls.model.__name__}")
         async with async_session_maker() as session:
             try:
@@ -180,3 +182,4 @@ class BaseRepository(Generic[T]):
             except SQLAlchemyError as e:
                 print(f"Ошибка при удалении всех запиcей {cls.model.__name__}")
                 raise e
+            return True

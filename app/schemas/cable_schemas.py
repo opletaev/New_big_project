@@ -1,11 +1,10 @@
 from datetime import date
 import re
 from typing import Annotated, Optional
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.models.cable import CableStatusEnum
-
-# from app.schemas.transaction_schemas import STransaction
 
 
 CHARS_MATCH_PATTERN = re.compile(r"^[а-яА-Яa-zA-Z0-9 \-]+$")
@@ -75,14 +74,16 @@ class AddCableDTO(BaseModel):
     )
 
 
-class CableDTO(AddCableDTO):
-    # active_transactions: Annotated[
-    #     Optional[list[Transaction]],
-    #     Field(title="Список операций"),
-    # ]
+class IssuedToDTO(BaseModel):
+    factory_employee_id: int
 
-    @computed_field(title="Полная маркеровка")
-    def full_name(self) -> str:
+
+class CableDTO(AddCableDTO):
+    id: UUID
+    issued_to: list[IssuedToDTO]
+
+    @computed_field(title="Полная маркировка")
+    def cable_name(self) -> str:
         return f"{self.index}.{self.group}.{self.assembly} {self.factory_number}"
 
 
@@ -129,3 +130,14 @@ class FindCableDTO(BaseModel):
     ]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateCableDTO(BaseModel):
+    last_service: Annotated[
+        date,
+        Field(title="Дата проверки"),
+    ]
+    next_service: Annotated[
+        date,
+        Field(title="Дата след. проверки"),
+    ]

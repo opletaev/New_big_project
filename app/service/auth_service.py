@@ -11,17 +11,13 @@ from app.exceptions.auth import (
     TokenExpiredException,
     TokenIsNotPresentException,
 )
-from app.service.user_service import UserService
 
 
 class AuthService:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    def __init__(self, user_service: UserService):
-        self.user_service = user_service
-
-    @staticmethod
-    def verify_token(request: Request) -> UUID:
+    @classmethod
+    def verify_token(self, request: Request) -> UUID:
         token = request.cookies.get("access_token")
         if not token:
             raise TokenIsNotPresentException
@@ -44,6 +40,7 @@ class AuthService:
             raise TokenIsNotPresentException
         return user_id
 
+    @classmethod
     def create_access_token(self, data: dict) -> str:
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(
@@ -57,8 +54,10 @@ class AuthService:
         )
         return encoded_jwt  #  Для отладки. Потом True
 
+    @classmethod
     def hashed_password(self, password: str) -> str:
         return self.pwd_context.hash(password)
 
+    @classmethod
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)

@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends, Response
 
-from app.dependencies.auth import get_auth_service, get_user_service
 from app.schemas.auth_schemas import AuthDTO
 from app.service.auth_service import AuthService
-from app.service.user_service import UserService
 from app.usecases.auth_usecase import AuthUsecase
 
 
@@ -14,18 +12,16 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация"])
 async def login_user(
     response: Response,
     user_data: AuthDTO,
-    service: AuthService = Depends(get_auth_service),
 ) -> str:
-    user = await AuthUsecase(service).login_user(response, user_data)
+    user = await AuthUsecase.login_user(response, user_data)
     return user
 
 
 @router.post("/logout", name="Выход")
 async def logout_user(
     response: Response,
-    service: UserService = Depends(get_user_service),
 ) -> None:
-    await AuthUsecase(service).logout_user(response)
+    await AuthUsecase.logout_user(response)
 
 
 @router.post("/my_id", name="Получить ID текущего пользователя")

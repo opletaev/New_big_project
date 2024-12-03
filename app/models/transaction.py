@@ -31,5 +31,5 @@ class Transaction(Base):
     )
 
     issued_by: Mapped[uuid.UUID] = mapped_column(nullable=False)
-    return_date: Mapped[datetime]
+    return_date: Mapped[datetime] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(nullable=False)
