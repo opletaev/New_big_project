@@ -6,14 +6,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import async_session_maker
 from app.models.cable import Cable
 from app.repositories.base import BaseRepository
+from app.logger import logger
 
 
 class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
     model = Cable
 
     async def cables_to_service_in(self, date: date) -> list[Cable] | None:
-        print(
-            f"Поиск записей {self.model.__name__}, где next_service <= {date.month}.{date.year}"
+        logger.info(
+            f"Find {self.model.__name__} records where next_service <= {date.month}.{date.year}"
         )
         async with async_session_maker() as session:
             try:
@@ -26,16 +27,21 @@ class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
                 result = await session.execute(query)
                 records = result.scalars().all()
                 if records:
-                    print(
-                        f"Записи {self.model.__name__}, где next_service <= {date.month}.{date.year} - Найдены"
-                    )
+                    logger.info(f"{len(records)} {self.model.__name__} records - Found")
                 else:
-                    print(
-                        f"Записи {self.model.__name__}, где next_service <= {date.month}.{date.year} - Не найдены"
+                    logger.info(
+                        f"{self.model.__name__} records where next_service <= {date.month}.{date.year} - Not Found"
                     )
-            except SQLAlchemyError as e:
-                print(
-                    f"Ошибка при поиске записи {self.model.__name__}, где next_service <= {date.month}.{date.year}"
-                )
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += f": Cannot find record where next_service <= {date.month}.{date.year}"
+                extra = {
+                    "model": self.model.__name__,
+                    "date": date,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return records

@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 
 from app.core.database import Base, async_session_maker
+from app.logger import logger
 
 T = TypeVar("T", bound=Base)
 
@@ -16,110 +17,159 @@ class BaseRepository(Generic[T]):
     @classmethod
     async def add(cls, values: BaseModel) -> T:
         values_dict = values.model_dump(exclude_unset=True)
-        print(f"Добавление записи {cls.model.__name__} с параметрами: {values_dict}")
+        logger.info(f"Add a {cls.model.__name__} record with values: {values_dict}")
         async with async_session_maker() as session:
             new_instance = cls.model(**values_dict)  # type: ignore
             session.add(new_instance)
             try:
                 await session.commit()
-                print(f"Запись {cls.model.__name__} - Успешно добавлена")
-            except SQLAlchemyError as e:
+                logger.info(f"{cls.model.__name__} record - Added")
+            except (SQLAlchemyError, Exception) as e:
                 await session.rollback()
-                print(f"Ошибка при добавлении записи {cls.model.__name__}: {e} ")
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot add record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "values": values_dict,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return new_instance
 
     @classmethod
     async def add_many(cls, values: list[BaseModel]) -> list[T]:
         values_list = [value.model_dump(exclude_unset=True) for value in values]
-        print(
-            f"Добавление нескольких записей {cls.model.__name__} с параметрами: {values_list}"
-        )
+        logger.info(f"Add many {cls.model.__name__} records with values: {values_list}")
         async with async_session_maker() as session:
             new_instances = [cls.model(**values) for values in values_list]  # type: ignore
             session.add_all(new_instances)
             try:
                 await session.commit()
-                print(
-                    f"{len(new_instances)} записей {cls.model.__name__} - Успешно добавлены"
+                logger.info(
+                    f"{len(new_instances)} {cls.model.__name__} records - Added"
                 )
-            except SQLAlchemyError as e:
+            except (SQLAlchemyError, Exception) as e:
                 await session.rollback()
-                print(
-                    f"Ошибка при добавлении нескольких записей {cls.model.__name__}: {e} "
-                )
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot add record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "values": values,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return new_instances
 
     @classmethod
     async def find_one_or_none_by_id(cls, instance_id: UUID | int) -> Optional[T]:
-        print(f"Поиск одной записи {cls.model.__name__} с ID: {instance_id}")
+        logger.info(f"Find a {cls.model.__name__} record with ID: {instance_id}")
         async with async_session_maker() as session:
             try:
                 query = select(cls.model).where(cls.model.id == instance_id)
                 result = await session.execute(query)
                 record = result.unique().scalar_one_or_none()
                 if record:
-                    print(f"Запись {cls.model.__name__} c ID: {instance_id} - Найдена")
-                else:
-                    print(
-                        f"Запись {cls.model.__name__} c ID: {instance_id} - Не найдена"
+                    logger.info(
+                        f"A{cls.model.__name__} record with ID: {instance_id} - Found"
                     )
-            except SQLAlchemyError as e:
-                print(
-                    f"Ошибка при поиске записи {cls.model.__name__} c ID: {instance_id}"
-                )
+                else:
+                    logger.info(
+                        f"A {cls.model.__name__} record with ID: {instance_id} - Not Found"
+                    )
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot find record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "id": instance_id,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return record
 
     @classmethod
     async def find_one_or_none_by_filter(cls, filters: BaseModel) -> T | None:
         filters_dict = filters.model_dump(exclude_unset=True)
-        print(f"Поиск одной записи {cls.model.__name__} по фильтрам: {filters_dict}")
+        logger.info(f"Find a {cls.model.__name__} record with filter: {filters_dict}")
         async with async_session_maker() as session:
             try:
                 query = select(cls.model).filter_by(**filters_dict)
                 result = await session.execute(query)
                 record = result.unique().scalar_one_or_none()
                 if record:
-                    print(f"Запись найдена по фильтрам: {filters_dict}")
+                    logger.info(
+                        f"A {cls.model.__name__} record with filter: {filters_dict} - Found"
+                    )
                 else:
-                    print(f"Запись не найдена по фильтрам: {filters_dict}")
-            except SQLAlchemyError as e:
-                print(
-                    f"Ошибка при поиске записи {cls.model.__name__} по фильтрам: {filters_dict}"
-                )
+                    logger.info(
+                        f"A {cls.model.__name__} record with filter: {filters_dict} - Not Found"
+                    )
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot find record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "filter": filters_dict,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return record
 
     @classmethod
     async def find_all_by_filter(cls, filters: BaseModel) -> list[T] | None:
         filters_dict = filters.model_dump(exclude_unset=True)
-        print(f"Поиск всех записей {cls.model.__name__} по фильтрам: {filters_dict}")
+        logger.info(
+            f"Search records to model: {cls.model.__name__} with filter: {filters_dict}"
+        )
         async with async_session_maker() as session:
             try:
                 query = select(cls.model).filter_by(**filters_dict)
                 result = await session.execute(query)
-                records = result.scalars().all()
-                print(f"Найдено {len(records)} записей")
-                print(records)
-            except SQLAlchemyError as e:
-                print(f"Ошибка при поиске всех записей по фильтрам: {filters_dict}")
+                records = result.unique().scalars().all()
+                logger.info(f"{len(records)} {cls.model.__name__} records - Found")
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot find records"
+                extra = {
+                    "model": cls.model.__name__,
+                    "filter": filters_dict,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return records
 
     @classmethod
     async def find_all(cls) -> list[T] | None:
-        print(f"Поиск всех записей {cls.model.__name__}")
+        logger.info(f"Search all records to model: {cls.model.__name__}")
         async with async_session_maker() as session:
             try:
                 query = select(cls.model)  # type: ignore
                 result = await session.execute(query)
                 records = result.unique().scalars().all()
-                print(records)
-                print(f"Найдено {len(records)} записей")
-            except SQLAlchemyError as e:
-                print(f"Ошибка при поиске всех записей {cls.model.__name__}")
+                logger.info(f"{len(records)} {cls.model.__name__} records - Found")
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot find records"
+                extra = {"model": cls.model.__name__}
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return records
 
@@ -130,9 +180,8 @@ class BaseRepository(Generic[T]):
         values: BaseModel,
     ) -> bool:
         values_dict = values.model_dump(exclude_none=True)
-        print(
-            f"""Обновление записи {cls.model.__name__} с ID: {instance_id}
-            Параметры: {values_dict}"""
+        logger.info(
+            f"Update {cls.model.__name__} record with ID: {instance_id}\nValues:{values_dict}"
         )
         async with async_session_maker() as session:
             try:
@@ -143,18 +192,31 @@ class BaseRepository(Generic[T]):
                 )
                 await session.execute(query)
                 await session.commit()
-                print(f"Запись {cls.model.__name__} с ID: {instance_id} - Обновлена")
-            except SQLAlchemyError as e:
-                print(f"Ошибка при обновлении записи: {e}")
+                logger.info(
+                    f"{cls.model.__name__} record with ID: {instance_id} - Uppdated"
+                )
+            except (SQLAlchemyError, Exception) as e:
                 await session.rollback()
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot update record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "values": values_dict,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return True
 
     @classmethod
     async def delete_by_id(cls, instance_id: UUID | int) -> bool:
-        print(f"Удаление записей {cls.model.__name__} по ID: {instance_id}")
+        logger.info(f"Delete {cls.model.__name__} record with ID: {instance_id}")
         if not instance_id:
-            print(f"Не указан ID записи для удаления")
+            logger.error(
+                f"{cls.model.__name__} record ID is not specified", exc_info=True
+            )
             raise ValueError("Не указан ID записи для удаления")
 
         async with async_session_maker() as session:
@@ -162,24 +224,41 @@ class BaseRepository(Generic[T]):
                 query = delete(cls.model).where(cls.model.id == instance_id)
                 await session.execute(query)
                 await session.commit()
-                print(f"Запись {cls.model.__name__} с ID: {instance_id} - Удалена")
-            except SQLAlchemyError as e:
-                print(
-                    f"Ошибка при удалении записи {cls.model.__name__} с ID: {instance_id}"
+                logger.info(
+                    f"{cls.model.__name__} record with ID: {instance_id} - Deleted"
                 )
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot delete record"
+                extra = {
+                    "model": cls.model.__name__,
+                    "id": instance_id,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return True
 
     @classmethod
     async def delete_all(cls) -> bool:
-        print(f"Удаление всех записей {cls.model.__name__}")
+        logger.info(f"Delete all records {cls.model.__name__}")
         async with async_session_maker() as session:
             try:
                 query = delete(cls.model)
                 await session.execute(query)
                 await session.commit()
-                print(f"Все записи {cls.model.__name__} - Удалены")
-            except SQLAlchemyError as e:
-                print(f"Ошибка при удалении всех запиcей {cls.model.__name__}")
+                logger.info(f"All records {cls.model.__name__} - Deleted")
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot delete records"
+                extra = {
+                    "model": cls.model.__name__,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return True

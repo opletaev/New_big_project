@@ -3,6 +3,7 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
+from app.logger import logger
 from app.models.profile import Profile
 from app.models.user import User
 from app.repositories.base import BaseRepository
@@ -17,6 +18,9 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
         user_id: UUID,
         user_data: UserDataDTO,
     ) -> bool:
+        logger.info(
+            f"Add {user_profile.__class__.__name__} record for user_id: {user_id} with user_data: {user_data}"
+        )
         async with async_session_maker() as session:
             try:
                 user_profile = Profile(
@@ -29,12 +33,19 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                 )
                 session.add(user_profile)
                 await session.commit()
-                print(f"Запись {user_profile.__class__.__name__} - Успешно добавлена")
-            except SQLAlchemyError as e:
-                await session.rollback()
-                print(
-                    f"Ошибка при добавлении запиcи {user_profile.__class__.__name__} c параметрами ..."
-                )
+                logger.info(f"{user_profile.__class__.__name__} record - Added")
+            except (SQLAlchemyError, Exception) as e:
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot add record"
+                extra = {
+                    "model": user_profile.__class__.__name__,
+                    "user_id": user_id,
+                    "user_data": user_data,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return True
 
@@ -47,7 +58,9 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
             exclude_none=True,
             exclude_unset=True,
         )
-        print(f"Обновление запиcи Profile c ID: {user_id} c параметрами {values_dict}")
+        logger.info(
+            f"Profile record for User with ID: {user_id}. New user_data: {user_data}"
+        )
         async with async_session_maker() as session:
             try:
                 user = await session.get(User, user_id)
@@ -55,13 +68,21 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                     for key, value in values_dict.items():
                         setattr(user.profile, key, value)
                     await session.commit()
-                    print(
-                        f"Запиcь {user.profile.__class__} c ID: {user.profile.id} - Обновлена"
+                    logger.info(
+                        f"{user.profile.__class__} record with ID: {user.profile.id} - Updated"
                     )
-            except SQLAlchemyError as e:
+            except (SQLAlchemyError, Exception) as e:
                 await session.rollback()
-                print(
-                    f"Ошибка при обновлении запиcи {user.profile.__class__} c ID: {user.profile.id} c параметрами {values_dict}"
-                )
+                if isinstance(e, SQLAlchemyError):
+                    msg = "Database Exc"
+                else:
+                    msg = "Unknown Exc"
+                msg += ": Cannot update record"
+                extra = {
+                    "model": user.profile.__class__,
+                    "user_id": user.profile.id,
+                    "user_data": values_dict,
+                }
+                logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return True

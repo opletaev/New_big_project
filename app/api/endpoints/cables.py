@@ -1,5 +1,7 @@
 from uuid import UUID
+
 from fastapi import APIRouter
+from fastapi_cache.decorator import cache
 
 from app.schemas.cable_schemas import (
     AddCableDTO,
@@ -28,12 +30,14 @@ async def update_service_dates(cable_id: UUID, service_dates: UpdateCableDTO) ->
 
 
 @router.post("/search", name="Поиск кабелей")
+@cache(expire=60)
 async def find_cables(filter: FindCableDTO) -> list[CableDTO]:
     cables = await CableUsecase.find_cables_by_filter(filter)
     return cables
 
 
 @router.get("/all", name="Вывести все кабели")
+@cache(expire=60)
 async def find_all_cables() -> list[CableDTO]:
     cables = await CableUsecase.find_all_cables()
     return cables

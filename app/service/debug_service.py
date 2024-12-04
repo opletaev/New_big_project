@@ -26,7 +26,7 @@ class DebugUserService:
     ]
 
     async def create_users_from_dicts(
-        self,
+        cls,
         users_data: list[dict] = users_data,
     ) -> list[User] | None:
         for user_data in users_data:
@@ -43,5 +43,5 @@ class DebugUserService:
 
         return await UserService.get_all_users()
 
-    async def delete_all_users(self) -> None:
+    async def delete_all_users(cls) -> None:
         await UserRepository.delete_all()

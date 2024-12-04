@@ -10,7 +10,7 @@ from app.service.user_service import UserService
 class AuthUsecase:
 
     @classmethod
-    async def login_user(self, response: Response, body: AuthDTO) -> str:
+    async def login_user(cls, response: Response, body: AuthDTO) -> str:
         user = await UserService.get_user_info_by_factory_employee_id(
             body.factory_employee_id
         )
@@ -24,5 +24,5 @@ class AuthUsecase:
         return access_token
 
     @classmethod
-    async def logout_user(self, response: Response) -> None:
+    async def logout_user(cls, response: Response) -> None:
         response.delete_cookie("access_token")

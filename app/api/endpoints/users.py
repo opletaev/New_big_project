@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi_cache.decorator import cache
 
 from app.schemas.user_schemas import (
     AllUserDataDTO,
@@ -58,6 +59,7 @@ async def update_user_password(
 
 
 @router.get("/all", name="Найти всех пользователей")
+@cache(expire=60)
 async def get_all_users() -> list[AllUserDataDTO]:
     users = await UserUsecase.get_all_users()
     return users

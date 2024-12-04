@@ -18,7 +18,7 @@ class UserUsecase:
 
     @classmethod
     async def create_user_and_profile(
-        self,
+        cls,
         user: RegisterUserDTO,
         user_data: UserDataDTO,
     ) -> User | None:
@@ -42,18 +42,18 @@ class UserUsecase:
 
     @classmethod
     async def delete_user(
-        self,
+        cls,
         user_id: int,
     ) -> None:
         return await UserService.delete_user(user_id)
 
     @classmethod
-    async def get_user_by_id(self, user_id: UUID) -> User | None:
+    async def get_user_by_id(cls, user_id: UUID) -> User | None:
         return await UserService.get_user_info_by_id(user_id)
 
     @classmethod
     async def get_user_info_by_factory_employee_id(
-        self,
+        cls,
         factory_employee_id: int,
     ) -> list[User] | None:
         return await UserService.get_user_info_by_factory_employee_id(
@@ -61,12 +61,12 @@ class UserUsecase:
         )
 
     @classmethod
-    async def get_all_users(self) -> list[User] | None:
+    async def get_all_users(cls) -> list[User] | None:
         return await UserService.get_all_users()
 
     @classmethod
     async def update_user_profile(
-        self,
+        cls,
         user_id: UUID,
         new_data: UpdateUserProfileRequestDTO,
     ) -> User | None:  # Для отладки. Потом None, наверно
@@ -75,7 +75,7 @@ class UserUsecase:
 
     @classmethod
     async def update_user_password(
-        self,
+        cls,
         user_id: UUID,
         password: UpdateUserPasswordRequestDTO,
     ) -> None:

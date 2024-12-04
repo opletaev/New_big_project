@@ -9,16 +9,16 @@ class ProfileService:
 
     @classmethod
     async def create_profile(
-        self,
+        cls,
         user_id: UUID,
         user_data: UserDataDTO,
     ) -> None:
-        await self.__profile_repository.create_profile(user_id, user_data)
+        await cls.__profile_repository.create_profile(user_id, user_data)
 
     @classmethod
     async def update_profile(
-        self,
+        cls,
         user_id: UUID,
         user_data: UpdateUserProfileRequestDTO,
     ) -> None:
-        await self.__profile_repository.update_profile(user_id, user_data)
+        await cls.__profile_repository.update_profile(user_id, user_data)
