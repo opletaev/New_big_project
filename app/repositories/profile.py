@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
-from app.logger import logger
+from app.logger import repository_log as logger
 from app.models.profile import Profile
 from app.models.user import User
 from app.repositories.base import BaseRepository
@@ -19,7 +19,12 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
         user_data: UserDataDTO,
     ) -> bool:
         logger.info(
-            f"Add {user_profile.__class__.__name__} record for user_id: {user_id} with user_data: {user_data}"
+            "Add a profile record for user",
+            extra={
+                "model": user_profile.__class__.__name__,
+                "user_id": user_id,
+                "user_data": user_data,
+            },
         )
         async with async_session_maker() as session:
             try:
@@ -33,13 +38,20 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                 )
                 session.add(user_profile)
                 await session.commit()
-                logger.info(f"{user_profile.__class__.__name__} record - Added")
+                logger.info(
+                    "A record - Added",
+                    extra={
+                        "model": user_profile.__class__.__name__,
+                        "user_id": user_id,
+                        "user_data": user_data,
+                    },
+                )
             except (SQLAlchemyError, Exception) as e:
                 if isinstance(e, SQLAlchemyError):
                     msg = "Database Exc"
                 else:
                     msg = "Unknown Exc"
-                msg += ": Cannot add record"
+                msg += ": Cannot add a record"
                 extra = {
                     "model": user_profile.__class__.__name__,
                     "user_id": user_id,
@@ -59,7 +71,12 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
             exclude_unset=True,
         )
         logger.info(
-            f"Profile record for User with ID: {user_id}. New user_data: {user_data}"
+            "Update a profile record for user",
+            extra={
+                "model": "Profile",
+                "user_id": user_id,
+                "user_data": user_data,
+            },
         )
         async with async_session_maker() as session:
             try:
@@ -69,7 +86,12 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                         setattr(user.profile, key, value)
                     await session.commit()
                     logger.info(
-                        f"{user.profile.__class__} record with ID: {user.profile.id} - Updated"
+                        "A profile record for user - Updated",
+                        extra={
+                            "model": "Profile",
+                            "user_id": user_id,
+                            "user_data": user_data,
+                        },
                     )
             except (SQLAlchemyError, Exception) as e:
                 await session.rollback()
@@ -77,7 +99,7 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
                     msg = "Database Exc"
                 else:
                     msg = "Unknown Exc"
-                msg += ": Cannot update record"
+                msg += ": Cannot update a record"
                 extra = {
                     "model": user.profile.__class__,
                     "user_id": user.profile.id,

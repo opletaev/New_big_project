@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.database import async_session_maker
 from app.models.cable import Cable
 from app.repositories.base import BaseRepository
-from app.logger import logger
+from app.logger import repository_log as logger
 
 
 class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
@@ -14,7 +14,11 @@ class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
 
     async def cables_to_service_in(self, date: date) -> list[Cable] | None:
         logger.info(
-            f"Find {self.model.__name__} records where next_service <= {date.month}.{date.year}"
+            f"Find records where next_service <= {date.month}.{date.year}",
+            extra={
+                "model": self.model.__name__,
+                "date": date,
+            },
         )
         async with async_session_maker() as session:
             try:
@@ -27,17 +31,27 @@ class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
                 result = await session.execute(query)
                 records = result.scalars().all()
                 if records:
-                    logger.info(f"{len(records)} {self.model.__name__} records - Found")
+                    logger.info(
+                        "Records - Found",
+                        extra={
+                            "model": self.model.__name__,
+                            "count": len(records),
+                        },
+                    )
                 else:
                     logger.info(
-                        f"{self.model.__name__} records where next_service <= {date.month}.{date.year} - Not Found"
+                        f"Records where next_service <= {date.month}.{date.year} - Not Found",
+                        extra={
+                            "model": self.model.__name__,
+                            "dete": date,
+                        },
                     )
             except (SQLAlchemyError, Exception) as e:
                 if isinstance(e, SQLAlchemyError):
                     msg = "Database Exc"
                 else:
                     msg = "Unknown Exc"
-                msg += f": Cannot find record where next_service <= {date.month}.{date.year}"
+                msg += f": Cannot find records where next_service <= {date.month}.{date.year}"
                 extra = {
                     "model": self.model.__name__,
                     "date": date,
