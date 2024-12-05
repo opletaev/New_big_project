@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from app.repositories.profile import ProfileRepository
-from app.schemas.user_schemas import UpdateUserProfileRequestDTO, UserDataDTO
+from app.repository.profile import ProfileRepository
+from app.dto.user import UpdateUserProfileRequestDTO, UserDataDTO
 
 
 class ProfileService:

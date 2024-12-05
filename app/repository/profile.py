@@ -3,11 +3,11 @@ from uuid import UUID
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
-from app.logger import repository_log as logger
+from app.core.logger import repository_log as logger
 from app.models.profile import Profile
 from app.models.user import User
-from app.repositories.base import BaseRepository
-from app.schemas.user_schemas import UpdateUserProfileRequestDTO, UserDataDTO
+from app.repository.base import BaseRepository
+from app.dto.user import UpdateUserProfileRequestDTO, UserDataDTO
 
 
 class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):

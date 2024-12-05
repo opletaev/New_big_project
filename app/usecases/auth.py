@@ -1,10 +1,9 @@
 from fastapi import Response
 
 from app.exceptions.auth import IncorrectEmailOrPassword
-from app.repositories.user import UserRepository
-from app.schemas.auth_schemas import AuthDTO
-from app.service.auth_service import AuthService
-from app.service.user_service import UserService
+from app.dto.auth import AuthDTO
+from app.service.auth import AuthService
+from app.service.user import UserService
 
 
 class AuthUsecase:

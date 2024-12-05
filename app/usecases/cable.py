@@ -3,10 +3,10 @@ from sqlalchemy import UUID
 
 from app.models.cable import Cable
 from app.models.transaction import Transaction
-from app.schemas.cable_schemas import AddCableDTO, FindCableDTO, UpdateCableDTO
-from app.schemas.transaction_schemas import AddTransactionDTO, FindTransactionDTO
-from app.service.cable_service import CableService
-from app.service.transaction_service import TransactionService
+from app.dto.cable import AddCableDTO, FindCableDTO, UpdateCableDTO
+from app.dto.transaction import AddTransactionDTO, FindTransactionDTO
+from app.service.cable import CableService
+from app.service.transaction import TransactionService
 
 
 class CableUsecase:

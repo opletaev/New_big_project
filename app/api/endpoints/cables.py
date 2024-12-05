@@ -3,13 +3,13 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 
-from app.schemas.cable_schemas import (
+from app.dto.cable import (
     AddCableDTO,
     CableDTO,
     FindCableDTO,
     UpdateCableDTO,
 )
-from app.usecases.cable_usecase import CableUsecase
+from app.usecases.cable import CableUsecase
 
 
 router = APIRouter(

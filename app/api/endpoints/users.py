@@ -3,15 +3,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_cache.decorator import cache
 
-from app.schemas.user_schemas import (
+from app.dto.user import (
     AllUserDataDTO,
     RegisterUserDTO,
     UpdateUserPasswordRequestDTO,
     UpdateUserProfileRequestDTO,
     UserDataDTO,
 )
-from app.service.auth_service import AuthService
-from app.usecases.user_usecase import UserUsecase
+from app.service.auth import AuthService
+from app.usecases.user import UserUsecase
 
 
 router = APIRouter(

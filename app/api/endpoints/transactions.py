@@ -1,9 +1,8 @@
 from uuid import UUID
 from fastapi import APIRouter
 
-from app.models.transaction import Transaction
-from app.schemas.transaction_schemas import AddTransactionDTO, FindTransactionDTO
-from app.usecases.cable_usecase import CableUsecase
+from app.dto.transaction import AddTransactionDTO, FindTransactionDTO
+from app.usecases.cable import CableUsecase
 
 
 router = APIRouter(

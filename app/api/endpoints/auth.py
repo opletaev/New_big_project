@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Response
 
-from app.schemas.auth_schemas import AuthDTO
-from app.service.auth_service import AuthService
-from app.usecases.auth_usecase import AuthUsecase
+from app.dto.auth import AuthDTO
+from app.service.auth import AuthService
+from app.usecases.auth import AuthUsecase
 
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация"])

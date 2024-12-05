@@ -6,6 +6,7 @@ from app.core.config import settings
 
 
 repository_log = logging.getLogger("repository_log")
+celery_log = logging.getLogger("celety_tasks_log")
 
 logHandler = logging.StreamHandler()
 formatter = jsonlogger.JsonFormatter()
@@ -17,7 +18,7 @@ class RepositoryJsonFormatter(jsonlogger.JsonFormatter):
             log_record, record, message_dict
         )
         if not log_record.get("timestamp"):
-            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_record["timestamp"] = now
         if log_record.get("level"):
             log_record["level"] = log_record["level"].upper()
@@ -30,3 +31,6 @@ logHandler.setFormatter(formatter)
 
 repository_log.addHandler(logHandler)
 repository_log.setLevel(settings.LOG_LEVEL)
+
+celery_log.addHandler(logHandler)
+celery_log.setLevel(settings.LOG_LEVEL)

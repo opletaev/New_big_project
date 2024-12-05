@@ -1,5 +1,5 @@
 from app.models.transaction import Transaction
-from app.repositories.base import BaseRepository
+from app.repository.base import BaseRepository
 
 
 class TransactionRepository(BaseRepository):

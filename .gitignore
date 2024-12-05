@@ -3,3 +3,6 @@
 __pycache__
 .pytest_cache
 pytest_cache
+
+pg_backups_test
+pg_backup_test

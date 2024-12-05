@@ -1,7 +1,7 @@
 from uuid import UUID
 from app.models.transaction import Transaction
-from app.repositories.transactions import TransactionRepository
-from app.schemas.transaction_schemas import (
+from app.repository.transactions import TransactionRepository
+from app.dto.transaction import (
     AddTransactionDTO,
     FindTransactionDTO,
     TransactionUpdateDTO,

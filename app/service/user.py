@@ -3,8 +3,8 @@ from uuid import UUID
 from pydantic import create_model
 
 from app.models.user import User
-from app.schemas.user_schemas import CreateUserDTO
-from app.repositories.user import UserRepository
+from app.dto.user import CreateUserDTO
+from app.repository.user import UserRepository
 
 
 class UserService:

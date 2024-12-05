@@ -2,16 +2,16 @@ from uuid import UUID
 
 from app.exceptions.user import UserAlreadyExistsException
 from app.models.user import User
-from app.schemas.user_schemas import (
+from app.dto.user import (
     CreateUserDTO,
     RegisterUserDTO,
     UpdateUserPasswordRequestDTO,
     UpdateUserProfileRequestDTO,
     UserDataDTO,
 )
-from app.service.auth_service import AuthService
-from app.service.profile_service import ProfileService
-from app.service.user_service import UserService
+from app.service.auth import AuthService
+from app.service.profile import ProfileService
+from app.service.user import UserService
 
 
 class UserUsecase:

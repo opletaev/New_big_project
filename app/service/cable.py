@@ -1,8 +1,8 @@
 from uuid import UUID
 
 from app.models.cable import Cable
-from app.repositories.cable import CableRepository
-from app.schemas.cable_schemas import AddCableDTO, FindCableDTO, UpdateCableDTO
+from app.repository.cable import CableRepository
+from app.dto.cable import AddCableDTO, FindCableDTO, UpdateCableDTO
 
 
 class CableService:

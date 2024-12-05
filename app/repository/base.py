@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 
 from app.core.database import Base, async_session_maker
-from app.logger import repository_log as logger
+from app.core.logger import repository_log as logger
 
 T = TypeVar("T", bound=Base)
 

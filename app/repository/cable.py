@@ -5,8 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
 from app.models.cable import Cable
-from app.repositories.base import BaseRepository
-from app.logger import repository_log as logger
+from app.repository.base import BaseRepository
+from app.core.logger import repository_log as logger
 
 
 class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
