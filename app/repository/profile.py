@@ -21,7 +21,7 @@ class ProfileRepository(BaseRepository):  # (AbstractRepository[SUser]):
         logger.info(
             "Add a profile record for user",
             extra={
-                "model": user_profile.__class__.__name__,
+                "model": "Profile",
                 "user_id": user_id,
                 "user_data": user_data,
             },
