@@ -1,4 +1,5 @@
-from typing import Generic, Optional, TypeVar
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 from uuid import UUID
 
 from sqlalchemy import delete, select, update
@@ -8,11 +9,26 @@ from pydantic import BaseModel
 from app.core.database import Base, async_session_maker
 from app.core.logger import repository_log as logger
 
+
 T = TypeVar("T", bound=Base)
 
 
-class BaseRepository(Generic[T]):
-    model: type[T]
+class AbstractRepository(ABC):
+    @abstractmethod
+    async def add():
+        raise NotImplementedError
+
+    @abstractmethod
+    async def find_all():
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_by_id():
+        raise NotImplementedError
+
+
+class BaseRepository(AbstractRepository, Generic[T]):
+    model: type[T] = None
 
     @classmethod
     async def add(cls, values: BaseModel) -> T:
@@ -87,50 +103,6 @@ class BaseRepository(Generic[T]):
                 logger.error(msg, extra=extra, exc_info=True)
                 raise e
             return new_instances
-
-    @classmethod
-    async def find_one_or_none_by_id(cls, instance_id: UUID | int) -> Optional[T]:
-        logger.info(
-            "Find a record by id",
-            extra={
-                "model": {cls.model.__name__},
-                "id": instance_id,
-            },
-        )
-        async with async_session_maker() as session:
-            try:
-                query = select(cls.model).where(cls.model.id == instance_id)
-                result = await session.execute(query)
-                record = result.unique().scalar_one_or_none()
-                if record:
-                    logger.info(
-                        "A record - Found",
-                        extra={
-                            "model": {cls.model.__name__},
-                            "id": instance_id,
-                        },
-                    )
-                else:
-                    logger.info(
-                        "A record - Not Found",
-                        extra={
-                            "model": {cls.model.__name__},
-                            "id": instance_id,
-                        },
-                    )
-            except (SQLAlchemyError, Exception) as e:
-                if isinstance(e, SQLAlchemyError):
-                    msg = "Database Exc"
-                else:
-                    msg = "Unknown Exc"
-                msg += ": Cannot find a record by id"
-                extra = {
-                    "model": cls.model.__name__,
-                    "id": instance_id,
-                }
-                logger.error(msg, extra=extra, exc_info=True)
-                raise e
-            return record
 
     @classmethod
     async def find_one_or_none_by_filter(cls, filters: BaseModel) -> T | None:

@@ -55,4 +55,4 @@ class User(Base):
         lazy="joined",
     )
 
-    repr_columns_num = 2
+    repr_columns_count = 2

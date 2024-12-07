@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.database import async_session_maker
 from app.models.cable import Cable
-from app.repository.base import BaseRepository
+from app.repositories.base import BaseRepository
 from app.core.logger import repository_log as logger
 
 
@@ -29,7 +29,7 @@ class CableRepository(BaseRepository):  # (AbstractRepository[SUser]):
                     ),
                 )
                 result = await session.execute(query)
-                records = result.scalars().all()
+                records = result.unique().scalars().all()
                 if records:
                     logger.info(
                         "Records - Found",

@@ -1,8 +1,11 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 
+from app.api.dependencies import auth_service, user_service
 from app.dto.auth import AuthDTO
-from app.service.auth import AuthService
-from app.usecases.auth import AuthUsecase
+from app.exceptions.auth import IncorrectEmailOrPassword
+from app.services.auth import AuthService
+from app.services.user import UserService
 
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация"])
@@ -12,16 +15,24 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация"])
 async def login_user(
     response: Response,
     user_data: AuthDTO,
+    auth_service: Annotated[AuthService, Depends(auth_service)],
+    user_service: Annotated[UserService, Depends(user_service)],
 ) -> str:
-    user = await AuthUsecase.login_user(response, user_data)
-    return user
+    user = await user_service.get_user(user_data.factory_employee_id)
+    if not user or not auth_service.verify_password(
+        user_data.password, user.hashed_password
+    ):
+        raise IncorrectEmailOrPassword
+    access_token = auth_service.create_access_token({"sub": str(user.id)})
+    response.set_cookie("access_token", access_token, httponly=True)
+    return access_token
 
 
 @router.post("/logout", name="Выход")
 async def logout_user(
     response: Response,
 ) -> None:
-    await AuthUsecase.logout_user(response)
+    await AuthService.logout_user(response)
 
 
 @router.post("/my_id", name="Получить ID текущего пользователя")

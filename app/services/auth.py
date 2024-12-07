@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import Request
+from fastapi import Request, Response
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -53,6 +53,10 @@ class AuthService:
             settings.ALGORITHM,
         )
         return encoded_jwt  #  Для отладки. Потом True
+
+    @classmethod
+    async def logout_user(cls, response: Response) -> None:
+        response.delete_cookie("access_token")
 
     @classmethod
     def hashed_password(cls, password: str) -> str:

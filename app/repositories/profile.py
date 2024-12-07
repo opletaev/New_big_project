@@ -6,7 +6,7 @@ from app.core.database import async_session_maker
 from app.core.logger import repository_log as logger
 from app.models.profile import Profile
 from app.models.user import User
-from app.repository.base import BaseRepository
+from app.repositories.base import BaseRepository
 from app.dto.user import UpdateUserProfileRequestDTO, UserDataDTO
 
 

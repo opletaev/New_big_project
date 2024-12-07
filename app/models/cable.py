@@ -45,4 +45,4 @@ class Cable(Base):
         lazy="joined",
     )
 
-    repr_columns_num = 5
+    repr_columns_count = 5

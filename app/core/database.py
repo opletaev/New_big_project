@@ -33,13 +33,13 @@ class Base(AsyncAttrs, DeclarativeBase):
         onupdate=func.now(),
     )
 
-    repr_columns_num: int = 3
+    repr_columns_count: int = 3
     repr_columns: tuple[str] = tuple()
 
     def __repr__(self):
         columns = [
             f"{column}={getattr(self, column)}"
             for idx, column in enumerate(self.__table__.columns.keys())
-            if column in self.repr_columns or idx < self.repr_columns_num
+            if column in self.repr_columns or idx < self.repr_columns_count
         ]
         return f"<{self.__class__.__name__} {','.join(columns)}>"

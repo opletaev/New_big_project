@@ -1,4 +1,4 @@
-# Digital cable storage
+# Factory's cables management app
 
 Веб-приложени для поиска, учета выдачи и отслеживания сроков проверки кабелей.
 
