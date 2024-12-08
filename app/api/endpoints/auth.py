@@ -1,7 +1,8 @@
 from typing import Annotated
+from uuid import UUID
 from fastapi import APIRouter, Depends, Response
 
-from app.api.dependencies import auth_service, user_service
+from app.api.dependencies import auth_service, user_service, verify_token
 from app.dto.auth import AuthDTO
 from app.exceptions.auth import IncorrectEmailOrPassword
 from app.services.auth import AuthService
@@ -35,6 +36,8 @@ async def logout_user(
     await AuthService.logout_user(response)
 
 
-@router.post("/my_id", name="Получить ID текущего пользователя")
-async def get_current_user_id(user_id: str = Depends(AuthService.verify_token)) -> str:
+@router.post("/id", name="Получить ID текущего пользователя")
+async def get_current_user_id(
+    user_id: Annotated[UUID, Depends(verify_token)],
+) -> str:
     return user_id

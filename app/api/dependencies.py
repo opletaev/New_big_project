@@ -1,3 +1,4 @@
+from fastapi import Request
 from app.repositories.cable import CableRepository
 from app.repositories.profile import ProfileRepository
 from app.repositories.transactions import TransactionRepository
@@ -10,7 +11,7 @@ from app.services.transaction import TransactionService
 from app.services.user import UserService
 
 
-def verify_token(request):
+async def verify_token(request: Request):
     return AuthService.verify_token(request)
 
 

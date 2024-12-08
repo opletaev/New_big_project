@@ -5,7 +5,8 @@ import uuid
 from sqlalchemy import UUID, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base, str_not_null
+from app.core.database import str_not_null
+from app.models.base import Base
 from app.models.transaction import Transaction
 
 
@@ -16,7 +17,6 @@ class CableStatusEnum(StrEnum):
 
 
 class Cable(Base):
-    __tablename__ = "cables"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID,

@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi_cache.decorator import cache
 
 from app.api.dependencies import (
@@ -58,7 +58,7 @@ async def create_user_and_profile(
     return user
 
 
-@router.patch("/update_profile", name="Изменить данные пользователя")
+@router.patch("/update/profile", name="Изменить данные пользователя")
 async def update_user_profile(
     user_data: UpdateUserProfileRequestDTO,
     user_id: Annotated[UUID, Depends(verify_token)],
@@ -67,7 +67,7 @@ async def update_user_profile(
     return await profile_service.update_profile(user_id, user_data)
 
 
-@router.patch("/update_password", name="Изменить пароль")
+@router.patch("/update/password", name="Изменить пароль")
 async def update_user_password(  # TODO: Добавить проверку токена
     password: UpdateUserPasswordRequestDTO,
     user_id: Annotated[UUID, Depends(verify_token)],
@@ -86,7 +86,15 @@ async def get_all_users(
     return await user_service.get_all_users()
 
 
-@router.get("/{factory_employee_id}", name="Найти пользователя по таб.№")
+@router.get("/me", name="Найти текущего пользователя")
+async def get_current_user(
+    user_id: Annotated[UUID, Depends(verify_token)],
+    user_service: Annotated[UserService, Depends(user_service)],
+) -> AllUserDataDTO:
+    return await user_service.get_user_by_id(user_id)
+
+
+@router.get("/", name="Найти пользователя по таб.№")
 async def get_user_info_by_factory_employee_id(
     factory_employee_id: int,
     user_service: Annotated[UserService, Depends(user_service)],
@@ -95,11 +103,3 @@ async def get_user_info_by_factory_employee_id(
     if not user_info:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     return user_info
-
-
-@router.get("/", name="Найти текущего пользователя")
-async def get_current_user(
-    user_id: Annotated[UUID, Depends(verify_token)],
-    user_service: Annotated[UserService, Depends(user_service)],
-) -> AllUserDataDTO:
-    return await user_service.get_user_by_id(user_id)

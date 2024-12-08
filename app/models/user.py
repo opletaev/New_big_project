@@ -4,7 +4,8 @@ import uuid
 from sqlalchemy import Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base, str_not_null
+from app.core.database import str_not_null
+from app.models.base import Base
 from app.models.transaction import Transaction
 
 
@@ -15,7 +16,6 @@ class UserRoleEnun(StrEnum):
 
 
 class User(Base):
-    __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True,

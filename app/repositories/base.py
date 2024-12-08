@@ -28,7 +28,7 @@ class AbstractRepository(ABC):
 
 
 class BaseRepository(AbstractRepository, Generic[T]):
-    model: type[T] = None
+    model: type[T]
 
     @classmethod
     async def add(cls, values: BaseModel) -> T:

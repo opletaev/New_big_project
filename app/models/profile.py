@@ -7,7 +7,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base, str_not_null
+from app.core.database import str_not_null
+from app.models.base import Base
 
 
 class DivisionEnum(StrEnum):
@@ -22,7 +23,6 @@ class DivisionEnum(StrEnum):
 
 
 class Profile(Base):
-    __tablename__ = "profiles"
 
     surname: Mapped[str_not_null]
     name: Mapped[str_not_null]
