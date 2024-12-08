@@ -6,8 +6,9 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 
-from app.core.database import Base, async_session_maker
+from app.core.database import async_session_maker
 from app.core.logger import repository_log as logger
+from app.models.base import Base
 
 
 T = TypeVar("T", bound=Base)

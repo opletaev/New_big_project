@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.core.database import Base
+from app.models.base import Base
 from app.models.cable import Cable
 from app.models.profile import Profile
 from app.models.user import User

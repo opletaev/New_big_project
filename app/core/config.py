@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    DB_ECHO: bool
     DB_BACKUP_DIR: str
 
     model_config = ConfigDict(env_file=".env")
